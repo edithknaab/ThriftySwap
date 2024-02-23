@@ -2,6 +2,8 @@ from flask import Flask, render_template, url_for, redirect, request, jsonify,se
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
+from werkzeug.utils import secure_filename
 from wtforms import StringField, PasswordField, SubmitField, ValidationError, SelectField, FloatField, IntegerField, DateField
 from wtforms.validators import InputRequired, Length, Email, NumberRange
 from flask_bcrypt import Bcrypt
@@ -15,6 +17,7 @@ from barcode import generate
 from barcode.writer import ImageWriter
 from io import BytesIO
 import base64
+import os
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -58,6 +61,7 @@ class User(db.Model, UserMixin):
     reset_code = db.Column(db.String(5))
     reset_expiration = db.Column(db.DateTime)
     store_id = db.Column(db.Integer, db.ForeignKey('store.id'), nullable=True)
+    profile_picture = db.Column(db.String(20), nullable=True, default='default.jpg')
 
 
 class Inventory(db.Model):
@@ -94,6 +98,7 @@ class RegisterForm(FlaskForm):
                             InputRequired(), Length(min=1, max=20)], render_kw={"placeholder": "First Name"})
     last_name = StringField(validators=[
                             InputRequired(), Length(min=1, max=20)], render_kw={"placeholder": "Last Name"})
+    picture = FileField('Upload Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     
     role = SelectField('Role', choices=[('student', 'Student'), ('staff', 'Staff')], default='student')
 
@@ -384,9 +389,17 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = secure_filename(form.picture.data.filename)
+            picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_file)
+            form.picture.data.save(picture_path)
+            picture_file = 'profile_pics/' + picture_file
+        else:
+            picture_file = 'default.jpg'
+
         hashed_password = bcrypt.generate_password_hash(form.password.data)
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
-                        first_name=form.first_name.data, last_name=form.last_name.data, role=form.role.data)
+                        first_name=form.first_name.data, last_name=form.last_name.data, role=form.role.data, profile_picture=picture_file)
         
         db.session.add(new_user)
         db.session.commit()

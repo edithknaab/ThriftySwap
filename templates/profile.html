@@ -52,7 +52,7 @@
 
 <body>
     <div class="profile-container">
-        <img src="images/profile.jpg" alt="Profile" class="profile-image">
+        <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile" class="profile-image">
         <h1 class="profile-title">User Profile</h1>
 
         <div class="profile-info">
