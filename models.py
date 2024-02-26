@@ -1,6 +1,7 @@
 from app import db
 from flask_login import UserMixin
 
+
 class Store(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
@@ -27,5 +28,5 @@ class Inventory(db.Model):
     stock = db.Column(db.Integer, nullable=False)
     value_per_item = db.Column(db.DECIMAL(10, 2), nullable=False)
     barcode = db.Column(db.String(50), nullable=True)
-    store_id = db.Column(db.Integer, db.ForeignKey('store.id'), nullable=True)
+    store_id = db.Column(db.Integer, db.ForeignKey('store.id'), nullable=False)
     type = db.Column(db.String(20))

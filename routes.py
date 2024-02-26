@@ -33,12 +33,12 @@ def add_item():
         value_per_item = form.value_per_item.data
         
         try:
-            # Generate a random barcode number (replace this with your barcode generation logic)
+            # Generate a random barcode number
             barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
             
-            # Create a new Inventory object with the generated barcode
+            # Adjusted to include store_id=1
             new_item = Inventory(item_name=item_name, material=material, weight=weight, stock=stock, 
-                                 value_per_item=value_per_item, barcode=barcode)
+                                 value_per_item=value_per_item, barcode=barcode, store_id=1)
             
             db.session.add(new_item)
             db.session.commit()
@@ -50,6 +50,8 @@ def add_item():
             return redirect(url_for('add_item'))
 
     return render_template('add_item.html', form=form)
+
+
 
 @app.route('/delete_item', methods=['POST'])
 def delete_item():
@@ -159,8 +161,10 @@ def verify_code():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    inventory_items = Inventory.query.all()
+    # Filter inventory items by store_id = 1
+    inventory_items = Inventory.query.filter_by(store_id=1).all()
     return render_template('dashboard.html', inventory_items=inventory_items)
+
 
 @app.route('/print_barcode/<barcode>', methods=['GET'])
 def print_barcode(barcode):
@@ -206,9 +210,9 @@ def update_quantity():
         return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
 
 
-@app.route('/get_inventory', methods=['GET'])
 def get_inventory():
-    inventory_items = Inventory.query.all()
+    # Filter inventory items by store_id = 1
+    inventory_items = Inventory.query.filter_by(store_id=1).all()
     serialized_items = [{
         'id': item.id,
         'item_name': item.item_name,
@@ -222,3 +226,60 @@ def get_inventory():
     } for item in inventory_items]
 
     return jsonify({'inventory': serialized_items})
+
+
+####swap shop routes
+
+@app.route('/dashboard_ss', methods=['GET', 'POST'])
+@login_required
+def dashboard_ss():
+    # Filter inventory items by store_id
+    inventory_items = Inventory.query.filter_by(store_id=2).all()
+    return render_template('dashboard_ss.html', inventory_items=inventory_items)
+
+def get_inventory_ss():
+    # Filter inventory items by store_id = 2
+    inventory_items = Inventory.query.filter_by(store_id=2).all()
+    serialized_items = [{
+        'id': item.id,
+        'item_name': item.item_name,
+        'material': item.material,
+        'weight': item.weight,
+        'stock': item.stock,
+        'value_per_item': item.value_per_item,
+        'barcode': item.barcode,
+        'store_name': item.store.name if item.store else '',
+        'type': item.type
+    } for item in inventory_items]
+
+    return jsonify({'inventory': serialized_items})
+
+@app.route('/add_item_ss', methods=['GET', 'POST'])
+@login_required
+def add_item_ss():
+    form = ItemForm()
+    if form.validate_on_submit():
+        item_name = form.item_name.data
+        material = form.material.data
+        weight = form.weight.data
+        stock = form.stock.data
+        value_per_item = form.value_per_item.data
+        
+        try:
+            # Generate a random barcode number (keep this logic for the swap shop items)
+            barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            
+            # Create a new Inventory object for the swap shop with the generated barcode and store_id set to 2
+            new_item = Inventory(item_name=item_name, material=material, weight=weight, stock=stock, 
+                                 value_per_item=value_per_item, barcode=barcode, store_id=2)
+            
+            db.session.add(new_item)
+            db.session.commit()
+            flash('Item added successfully to the swap shop', 'success')
+            return redirect(url_for('dashboard_ss'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding item to the swap shop: {str(e)}', 'error')
+            return redirect(url_for('add_item_ss'))
+
+    return render_template('add_item_ss.html', form=form)

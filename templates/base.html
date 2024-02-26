@@ -57,10 +57,12 @@
         <p>Welcome, {{ current_user.first_name }}</p>
         {% endif %}
         <ul>
+            <li><a href="{{ url_for('dashboard_ss') }}"><i class="fas fa-boxes"></i> Dashboard SS</a></li>
+            <li><a href="{{ url_for('add_item_ss') }}"><i class="fas fa-plus"></i> Add Item SS</a></li>
             <li><a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> View Profile</a></li>
             <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            <li><a href="{{ url_for('add_item') }}"><i class="fas fa-plus"></i> Add Item</a></li>
-            <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="{{ url_for('add_item') }}"><i class="fas fa-plus"></i> Add Item TO</a></li>
+            <li><a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> Dashboard TO</a></li>
         </ul>
     </nav>
 

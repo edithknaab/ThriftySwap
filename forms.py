@@ -63,4 +63,5 @@ class ItemForm(FlaskForm):
     stock = IntegerField('Stock', validators=[InputRequired(), NumberRange(min=0)])
     value_per_item = FloatField('Value Per Item', validators=[InputRequired(), NumberRange(min=0)])
     barcode = StringField('Barcode', validators=[Length(max=50)])
+    store_id = IntegerField(validators=[InputRequired()], render_kw={"type":"hidden"})
     submit = SubmitField('Add Item')
