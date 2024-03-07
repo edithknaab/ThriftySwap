@@ -40,6 +40,7 @@
         <input type="date" id="intake-date-filter">
         <button onclick="filterIntakeTable()">Filter</button>
         <button onclick="printIntakeTable()">Print</button>
+        <input type="text" id="intake-donor-search" onkeyup="searchDonorIntake()" placeholder="Search by Donor Name...">
         <table id="intake-table">
             <thead>
                 <tr>
@@ -65,11 +66,11 @@
                         <script>
                             var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
                             var timestamp = new Date(timestampString);
-                            var options = { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", hour12: true };
-                            var easternTime = timestamp.toLocaleString("en-US", options);
-                            document.write(easternTime);
+                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
+                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
+                            document.write(easternDate + " " + easternTime);
                         </script>
-                    </td>
+                    </td>                                  
                     <td>{{ intake_transaction.quantity }}</td>
                     <td>{{ intake_transaction.donor_info }}</td>
                     </tr><tr><!-- Create a new row for each intake transaction -->
@@ -86,6 +87,7 @@
         <input type="date" id="outtake-date-filter">
         <button onclick="filterOuttakeTable()">Filter</button>
         <button onclick="printOuttakeTable()">Print</button>
+        <input type="text" id="outtake-donor-search" onkeyup="searchDonorOuttake()" placeholder="Search by Donor Name...">
         <table id="outtake-table">
             <thead>
                 <tr>
@@ -125,6 +127,45 @@
     </div>  
 
     <script>
+        function searchDonorIntake() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("intake-donor-search");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("intake-table");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[6]; // Index 6 corresponds to the "Donor Information" column
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = ""; // Show the row if it matches the search query
+                } else {
+                    tr[i].style.display = "none"; // Hide the row if it doesn't match
+                }
+            }
+        }
+    }
+
+    function searchDonorOuttake() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("outtake-donor-search");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("outtake-table");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[4]; // Index 4 corresponds to the "Donor Information" column
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = ""; // Show the row if it matches the search query
+                } else {
+                    tr[i].style.display = "none"; // Hide the row if it doesn't match
+                }
+            }
+        }
+    }
         // JavaScript functions for filtering and printing intake table
         function filterIntakeTable() {
             var input, filter, table, tr, td, i, txtValue;
@@ -184,3 +225,4 @@
 </body>
 </html>
 {% endblock %}
+
