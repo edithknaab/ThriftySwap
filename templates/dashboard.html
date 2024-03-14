@@ -176,30 +176,10 @@ function updateQuantity(itemId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    quantityInput.value = newQuantity;
-                    alert(data.message);
+                    quantityInput.value = newQuantity; // Update the input field in the main inventory list
+                    document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
 
-                    fetch('/create_intake_transaction', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            inventory_id: itemId,
-                            item_name: data.item_name,
-                            quantity: quantityToAdd,
-                            donor_info: donorInfo
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Optionally, you can perform additional actions if needed
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+                    alert(data.message);
 
                 } else {
                     alert(data.message);
@@ -213,6 +193,7 @@ function updateQuantity(itemId) {
         alert("Please enter a valid quantity to add.");
     }
 }
+
 
 function printBarcode(barcode) {
     if (barcode !== null) {
@@ -260,22 +241,25 @@ function deleteItem(itemId) {
         .catch(error => console.error('Error:', error));
 }
 
-
-
 function releaseItem(itemId, itemName) {
     var quantity = prompt("Enter the quantity to release:");
     var donorInfo = prompt("Enter donor information:");
     if (quantity !== null && !isNaN(quantity) && quantity.trim() !== '' && donorInfo !== null && donorInfo.trim() !== '') {
+        var quantityNum = parseInt(quantity);
         fetch('/release_item', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ item_name: itemName, item_id: itemId, quantity: parseInt(quantity), donor_info: donorInfo }),
+            body: JSON.stringify({ item_name: itemName, item_id: itemId, quantity: quantityNum, donor_info: donorInfo }),
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    var quantityInput = document.getElementById(`quantity_${itemId}`);
+                    var newQuantity = parseInt(quantityInput.value) - quantityNum;
+                    quantityInput.value = newQuantity; // Update the input field in the main inventory list
+                    document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
                     alert(data.message);
                 } else {
                     alert(data.message);
