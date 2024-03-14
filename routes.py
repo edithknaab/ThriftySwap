@@ -78,9 +78,9 @@ def scan_barcode():
     inventory_item = Inventory.query.filter_by(barcode=scanned_barcode).first()
 
     if inventory_item:
-        inventory_item.stock += 1
-        db.session.commit()
-        return jsonify({'success': True, 'message': 'Item quantity increased successfully'})
+        # inventory_item.stock += 1
+        # db.session.commit()
+        return jsonify({'success': True, 'message': 'Item found', 'itemId': inventory_item.id})
     else:
         return jsonify({'success': False, 'message': 'Item not found'})
 
@@ -325,6 +325,30 @@ def get_item_name(item_id, transaction_type):
     else:
         return None  # Or handle the case where the item ID is invalid
 
+@app.route('/get_item_details/<int:id>', methods=['GET'])
+def get_item_details(id):
+    # Fetch the item from the database using the provided id
+    item = Inventory.query.get(id)
+
+    # If the item does not exist, return a 404 error
+    if item is None:
+        return jsonify({'error': 'Item not found'}), 404
+
+    # Convert the item to a dictionary
+    item_data = {
+        'id': item.id,
+        'item_name': item.item_name,
+        'material': item.material,
+        'weight': item.weight,
+        'stock': item.stock,
+        'value_per_item': str(item.value_per_item),
+        'barcode': item.barcode,
+        'store_id': item.store_id,
+        'type': item.type
+    }
+
+    # Return the item data as JSON
+    return jsonify(item_data)
 
 @app.route('/filter_inventory')
 def filter_inventory():
@@ -499,3 +523,4 @@ def create_intake_transaction():
         # Rollback the transaction if an error occurs
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+    

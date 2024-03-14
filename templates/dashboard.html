@@ -4,10 +4,20 @@
 
 {% block content %}
 <h2>Thrifty Owl Inventory</h2>
-
+<div id="itemDetailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-container"><span class="close">&times;</span></span>
+      <h2>Item Details</h2>
+      <p id="itemName"></p>
+      <p id="itemMaterial"></p>
+      <p id="itemWeight"></p>
+      <p id="itemStock"></p>
+      <p id="itemValue"></p>
+    </div>
+</div>
 <!-- Inventory window -->
 <div class="inventory-window">
-    <input type="text" id="scannedBarcode" readonly>
+    <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
 
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -28,10 +38,97 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
+    
 document.addEventListener('DOMContentLoaded', function() {
     fetchInventory();
     scanBarcode();
+    // Create a new div for the buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+
+    // Create the Update button
+    const updateButton = document.createElement('button');
+    updateButton.onclick = function() { updateQuantity(itemId); };
+    updateButton.className = 'btn btn-primary modal-button';
+    updateButton.textContent = 'Update';
+
+    // Create the Release button
+    const releaseButton = document.createElement('button');
+    releaseButton.onclick = function() { releaseItem(itemId, data.item_name); };
+    releaseButton.className = 'btn btn-primary modal-button';
+    releaseButton.textContent = 'Release';
+
+    // Add the buttons to the buttonContainer
+    buttonContainer.appendChild(updateButton);
+    buttonContainer.appendChild(releaseButton);
+
+    // Add the buttonContainer to the modalContent
+    modalContent.appendChild(buttonContainer);
+
+    // Set focus on the barcode input field
+    document.getElementById('scannedBarcode').focus();
+
+    // Get the modal and the close button
+    var modal = document.getElementById('itemDetailsModal');
+    var closeButton = document.querySelector('.close');
+
+    // When the user clicks on the close button, close the modal
+    closeButton.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
 });
+
+function showItemDetails(itemId) {
+    fetch(`/get_item_details/${itemId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('itemName').innerText = "Item Name: " + data.item_name;
+            document.getElementById('itemMaterial').innerText = "Material: " + data.material;
+            document.getElementById('itemWeight').innerText = "Weight: " + data.weight;
+            document.getElementById('itemStock').innerText = "Stock: " + data.stock;
+            document.getElementById('itemValue').innerText = "Value Per Item: " + data.value_per_item;
+
+            // Add Update and Release buttons to the modal
+            const modalContent = document.querySelector('.modal-content');
+            
+            // Clear previous buttons
+            const oldButtons = modalContent.querySelectorAll('button');
+            oldButtons.forEach(button => button.remove());
+
+            modalContent.innerHTML += `
+            <div class="button-container">
+                <button onclick="updateQuantity(${itemId})" class="btn btn-primary modal-button">Update</button>
+                <button onclick="releaseItem(${itemId}, '${data.item_name}')" class="btn btn-primary modal-button">Release</button>
+            </div>
+            `;
+
+            // Show the modal
+            document.getElementById('itemDetailsModal').style.display = "block";
+
+            // Get the modal and the close button
+            var modal = document.getElementById('itemDetailsModal');
+            var closeButton = document.querySelector('.close');
+
+            // When the user clicks on the close button, close the modal
+            closeButton.onclick = function() {
+              modal.style.display = "none";
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+              if (event.target == modal) {
+                modal.style.display = "none";
+              }
+            }
+        });
+}
 
 function fetchInventory() {
     fetch(`/get_inventory`)
@@ -89,7 +186,7 @@ function updateQuantity(itemId) {
                         },
                         body: JSON.stringify({
                             inventory_id: itemId,
-                            item_name: "Item Name",
+                            item_name: data.item_name,
                             quantity: quantityToAdd,
                             donor_info: donorInfo
                         }),
@@ -191,11 +288,15 @@ function releaseItem(itemId, itemName) {
 }
 
 function scanBarcode() {
-    document.getElementById('scannedBarcode').addEventListener('keypress', function (event) {
-        if (event.keyCode === 13) {
-            const scannedBarcode = this.value.trim();
-            this.value = '';
+    let scannedBarcode = '';
+    let timer = null;
+    const inputField = document.getElementById('scannedBarcode');
 
+    inputField.addEventListener('input', function (event) {
+        clearTimeout(timer);
+        scannedBarcode = event.target.value;
+
+        timer = setTimeout(function() {
             fetch('/scan_barcode', {
                 method: 'POST',
                 headers: {
@@ -203,16 +304,22 @@ function scanBarcode() {
                 },
                 body: JSON.stringify({ barcode: scannedBarcode }),
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Log the server response
+                if (data.success) {
+                    // Call the showItemDetails function with the item id
+                    showItemDetails(data.itemId);
+                } else {
+                    alert(`Item not found: ${scannedBarcode}. ${data.message}`);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
+            // Clear the input field and scannedBarcode variable
+            scannedBarcode = '';
+            inputField.value = '';
+        }, 500); // Wait for 500ms after the last input to send the barcode
     });
 }
 </script>
