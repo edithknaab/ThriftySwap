@@ -208,7 +208,7 @@ def dashboard():
 @app.route('/swapshopbase')
 @login_required
 def swapshopbase():
-    # Code here
+    
     return render_template('swapshopbase.html')
 
 @app.route('/print_barcode/<barcode>', methods=['GET'])
@@ -640,3 +640,18 @@ def update_quantity_ss():
     except KeyError as e:
         return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
 
+
+@app.route('/profile_swap_shop', methods=['GET', 'POST'])
+@login_required
+def profile_swap_shop():
+    if request.method == 'POST':
+        if 'picture' in request.files:
+            picture = request.files['picture']
+            filename = secure_filename(picture.filename)
+            picture.save(os.path.join('static/profile_pics', filename))
+            current_user.profile_picture = 'profile_pics/' + filename
+            db.session.commit()
+            return redirect(url_for('profile'))
+
+    user_store = Store.query.get(current_user.store_id)
+    return render_template('profile_swap_shop.html', user=current_user, store=user_store)
