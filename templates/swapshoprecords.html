@@ -1,0 +1,177 @@
+{% extends 'ssbase.html' %}
+
+{% block title %}Swap Shop Records{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .right-aligned {
+        text-align: right;
+    }
+</style>
+<div>
+    <h1>Swap Shop Inventory Report</h1>
+    <hr>
+    <div>
+        <h2>Intake Report</h2>
+        <label for="intake-search-filter">Search by Item Name or Donor Info:</label>
+        <input type="text" id="intake-search-filter" onkeyup="filterIntakeTable()">
+        <button onclick="printIntakeTable()">Print</button>
+        <table id="intake-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Timestamp</th>
+                    <th>Donor Information</th>
+                    <th>Value Per Item</th>
+                    <th>Total Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item, intake_data in intake_info.items() %}
+                {% for intake_transaction in intake_data %}
+                <tr>
+                    <td>{{ intake_transaction.swap_shop_inventory.item_name }}</td>
+                    <td>{{ intake_transaction.quantity }}</td>
+                    <td>{{ intake_transaction.timestamp }}</td>
+                    <td>{{ intake_transaction.donor_info }}</td>
+                    <td>{{ intake_transaction.swap_shop_inventory.value_per_item }}</td>
+                    <td>{{ intake_transaction.swap_shop_inventory.value_per_item * intake_transaction.quantity }}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="intake-total"></div>
+    </div>      
+
+    <div>
+        <h2>Outtake History</h2>
+        <label for="outtake-search-filter">Search by Item Name or Donor Info:</label>
+        <input type="text" id="outtake-search-filter" onkeyup="filterOuttakeTable()">
+        <button onclick="printOuttakeTable()">Print</button>
+        <table id="outtake-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Timestamp</th>
+                    <th>Donor Information</th>
+                    <th>Weight</th>
+                    <th>Total Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for outtake_transaction in outtake_transactions %}
+                <tr>
+                    <td>{{ outtake_transaction.swap_shop_inventory.item_name }}</td> 
+                    <td>{{ outtake_transaction.quantity }}</td>
+                    <td>{{ outtake_transaction.timestamp }}</td>
+                    <td>{{ outtake_transaction.donor_info }}</td>
+                    <td>{{ outtake_transaction.swap_shop_inventory.weight }}</td>
+                    <td>{{ outtake_transaction.swap_shop_inventory.value_per_item * outtake_transaction.quantity }}</td>                 
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="outtake-total"></div>
+    </div>  
+
+    <script>
+     // Calculate and display total value for intake table
+     var intakeTable = document.getElementById("intake-table");
+        var intakeRows = intakeTable.getElementsByTagName("tr");
+        var intakeTotal = 0;
+        for (var i = 1; i < intakeRows.length; i++) {
+            var rowCells = intakeRows[i].getElementsByTagName("td");
+            intakeTotal += parseFloat(rowCells[5].innerText);
+        }
+        document.getElementById("intake-total").innerText = "Total Value: " + intakeTotal.toFixed(2);
+
+        // Calculate and display total value for outtake table
+        var outtakeTable = document.getElementById("outtake-table");
+        var outtakeRows = outtakeTable.getElementsByTagName("tr");
+        var outtakeTotal = 0;
+        for (var j = 1; j < outtakeRows.length; j++) {
+            var rowCells = outtakeRows[j].getElementsByTagName("td");
+            outtakeTotal += parseFloat(rowCells[5].innerText);
+        }
+        document.getElementById("outtake-total").innerText = "Total Value: " + outtakeTotal.toFixed(2);
+
+        
+        function filterIntakeTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("intake-search-filter");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("intake-table");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Item name column
+                var donor_info_td = tr[i].getElementsByTagName("td")[3]; // Donor info column
+                if (item_name_td || donor_info_td) {
+                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
+                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
+                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function filterOuttakeTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("outtake-search-filter");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("outtake-table");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Item name column
+                var donor_info_td = tr[i].getElementsByTagName("td")[3]; // Donor info column
+                if (item_name_td || donor_info_td) {
+                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
+                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
+                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function printIntakeTable() {
+            var printContents = document.getElementById("intake-table").outerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+
+        function printOuttakeTable() {
+            var printContents = document.getElementById("outtake-table").outerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+    </script>
+</div>
+{% endblock %}

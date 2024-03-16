@@ -75,3 +75,12 @@ class ItemForm(FlaskForm):
     value_per_item = FloatField('Value Per Item', validators=[InputRequired(), NumberRange(min=0)])
     barcode = StringField('Barcode', validators=[Length(max=50)])
     submit = SubmitField('Add Item')
+
+class SSItemForm(FlaskForm):
+    item_name = StringField('Item Name', validators=[InputRequired(), Length(min=1, max=50)])
+    material = StringField('Material', validators=[Length(max=50)])
+    weight = FloatField('Weight (kg)', validators=[InputRequired(), NumberRange(min=0)])
+    stock = IntegerField('Stock', validators=[InputRequired(), NumberRange(min=0)])
+    value_per_item = FloatField('Value Per Item', validators=[InputRequired(), NumberRange(min=0)])
+    barcode = StringField('Barcode', validators=[Length(max=50)])
+    submit = SubmitField('Add Item')

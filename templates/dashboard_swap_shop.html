@@ -1,0 +1,155 @@
+{% extends "ssbase.html" %}
+{% block content %}
+<h1>Swap Shop Inventory</h1>
+<div class="inventory-window">
+    <input type="text" id="scannedBarcode" readonly>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Material</th>
+                    <th>Weight (kg)</th>
+                    <th>Stock</th>
+                    <th>Value Per Item</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.item_name }}</td>
+                    <td>{{ item.material }}</td>
+                    <td>{{ item.weight }}</td>
+                    <td><input type="number" id="quantity_{{ item.id }}" value="{{ item.stock }}" class="form-control" readonly></td>
+                    <td>{{ item.value_per_item }}</td>
+                    <td>
+                        <button onclick="releaseItem('{{ item.id }}', '{{ item.item_name }}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
+                        <button onclick="updateQuantity('{{ item.id }}')" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Update </button>
+                        <button onclick="printBarcode('{{ item.barcode }}')" class="btn btn-success"><i class="bi bi-printer"></i> Print Barcode</button>
+                        <button onclick="deleteItem('{{ item.id }}')" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    scanBarcode();
+});
+
+function printBarcode(barcode) {
+    if (barcode !== null) {
+        const barcodeImage = new Image();
+
+        JsBarcode(barcodeImage, barcode, {
+            format: "CODE128",
+            width: 2,
+            height: 50
+        });
+
+        const printWindow = window.open('', '_blank');
+
+        printWindow.document.body.appendChild(barcodeImage);
+
+        printWindow.print();
+    } else {
+        alert("Barcode number is null.");
+    }
+}
+function releaseItem(itemId, itemName) {
+    var quantity = prompt("Enter the quantity to release:");
+    var donorInfo = prompt("Enter donor information:");
+    if (quantity !== null && !isNaN(quantity) && quantity.trim() !== '' && donorInfo !== null && donorInfo.trim() !== '') {
+        fetch('/release_item_ss', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ item_id: itemId, quantity: parseInt(quantity), donor_info: donorInfo }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                // Update the quantity without reloading the page
+                var quantityInput = document.getElementById(`quantity_${itemId}`);
+                var currentQuantity = parseInt(quantityInput.value);
+                var releasedQuantity = parseInt(quantity);
+                quantityInput.value = currentQuantity - releasedQuantity; // Decrease the quantity
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+        alert("Please enter a valid quantity and donor information.");
+    }
+}
+
+function updateQuantity(itemId) {
+    const quantityInput = document.getElementById(`quantity_${itemId}`);
+    const quantityToAdd = parseInt(prompt("Enter the quantity to add:"));
+
+    if (!isNaN(quantityToAdd) && quantityToAdd > 0) {
+        const donorInfo = prompt("Enter donor information:");
+        if (donorInfo !== null && donorInfo.trim() !== '') {
+            fetch('/update_quantity_ss', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ item_id: itemId, quantity_to_add: quantityToAdd }), // Change 'new_quantity' to 'quantity_to_add'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the quantity without reloading the page
+                    const currentQuantity = parseInt(quantityInput.value);
+                    quantityInput.value = currentQuantity + quantityToAdd; // Add the entered quantity to the current quantity
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        } else {
+            alert("Please enter donor information.");
+        }
+    } else {
+        alert("Please enter a valid quantity to add.");
+    }
+}
+
+function scanBarcode() {
+    document.getElementById('scannedBarcode').addEventListener('keypress', function (event) {
+        if (event.keyCode === 13) {
+            const scannedBarcode = this.value.trim();
+            this.value = '';
+
+            fetch('/scan_barcode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ barcode: scannedBarcode }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    });
+}
+</script>
+{% endblock %}
