@@ -112,7 +112,8 @@
                         <script>
                             var timestampString = "{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
                             var timestamp = new Date(timestampString);
-                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
+                            var options = { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", hour12: true };
+                            var easternTime = timestamp.toLocaleString("en-US", options);
                             var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
                             document.write(easternDate + " " + easternTime);
                         </script>

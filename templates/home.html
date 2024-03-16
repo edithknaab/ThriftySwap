@@ -15,7 +15,7 @@
             <h1>Welcome, {{ current_user.username }}!</h1>
             <h2>Please select inventory</h2>
             <a class="btn" href="{{ url_for('dashboard') }}">ThriftyOwl</a><br>
-            <a class="btn" href="{{ url_for('swapshopbase') }}">SwapShop</a><br>
+            <a class="btn" href="{{ url_for('swap_shop_dashboard') }}">SwapShop</a><br>
         {% else %}
             <h1>Login Authentication System in Flask.</h1>
             <a class="btn" href="{{ url_for('login') }}">Login</a><br>

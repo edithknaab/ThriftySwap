@@ -48,16 +48,7 @@ class IntakeTransaction(db.Model):
     user = db.Column(db.String)  # Assuming you have a user field
     timestamp = db.Column(db.DateTime)
     donor_info = db.Column(db.String)
-
-    # Define the relationship with the Inventory model
     inventory = db.relationship('Inventory', back_populates='intake_transactions')
-
-    @property
-    def formatted_timestamp(self):
-        # Assuming you want to format the timestamp in the same way as in the OuttakeTransaction class
-        eastern_tz = pytz.timezone('America/New_York')
-        return self.timestamp.astimezone(eastern_tz).strftime('%I:%M %p')
-
 
 
 class OuttakeTransaction(db.Model):
@@ -68,17 +59,42 @@ class OuttakeTransaction(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     donor_info = db.Column(db.String)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    # Define the relationship with the Inventory model
+     # Define the relationship with the Inventory model
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
     inventory = db.relationship('Inventory', back_populates='outtake_transactions')
 
-    @property
-    def timestamp_eastern(self):
-    # Convert timestamp to Eastern Time (ET)
-        eastern_tz = pytz.timezone('America/New_York')
-        return self.timestamp.astimezone(eastern_tz)
 
-    @property
-    def formatted_timestamp(self):
-        # Format the timestamp to show hours (12-hour clock), minutes, and AM/PM
-        return self.timestamp_eastern.strftime('%I:%M %p')
+class SwapShopInventory(db.Model):
+    __tablename__ = 'swap_shop_inventory'
+    id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String(50), nullable=False)
+    material = db.Column(db.String(50), nullable=True)
+    weight = db.Column(db.Float, nullable=False)
+    stock = db.Column(db.Integer, nullable=False)
+    value_per_item = db.Column(db.DECIMAL(10, 2), nullable=False)
+    barcode = db.Column(db.String(50), nullable=True)
+    type = db.Column(db.String(20))
+    swap_shop_intake_transactions = db.relationship('SwapShopIntakeTransaction', back_populates='swap_shop_inventory')
+    swap_shop_outtake_transactions = db.relationship('SwapShopOuttakeTransaction', back_populates='swap_shop_inventory')    
+
+class SwapShopIntakeTransaction(db.Model):
+    __tablename__ = 'swap_shop_intake_transaction'
+    id = db.Column(db.Integer, primary_key=True)
+    swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    user = db.Column(db.String)  # Assuming you have a user field
+    timestamp = db.Column(db.DateTime)
+    donor_info = db.Column(db.String)
+    swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)
+    swap_shop_inventory = db.relationship('SwapShopInventory', back_populates='swap_shop_intake_transactions')
+
+
+class SwapShopOuttakeTransaction(db.Model):
+    __tablename__ = 'swap_shop_outtake_transaction'
+    id = db.Column(db.Integer, primary_key=True)
+    swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    donor_info = db.Column(db.String)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)
+    swap_shop_inventory = db.relationship('SwapShopInventory', back_populates='swap_shop_outtake_transactions')
