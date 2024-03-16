@@ -18,7 +18,9 @@
 <!-- Inventory window -->
 <div class="inventory-window">
     <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
-
+<div>
+    <input type="text" id="searchInput" placeholder="Search by Item Name">
+</div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
@@ -306,5 +308,19 @@ function scanBarcode() {
         }, 500); // Wait for 500ms after the last input to send the barcode
     });
 }
+
+document.getElementById('searchInput').addEventListener('input', function() {
+    const searchTerm = this.value.trim().toLowerCase();
+    const tableRows = document.querySelectorAll('#inventoryBody tr');
+
+    tableRows.forEach(row => {
+        const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
+        if (itemName.includes(searchTerm)) {
+            row.style.display = ''; // Show the row if item name matches search term
+        } else {
+            row.style.display = 'none'; // Hide the row if item name doesn't match search term
+        }
+    });
+});
 </script>
 {% endblock %}
