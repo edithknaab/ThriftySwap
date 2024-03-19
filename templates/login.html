@@ -2,34 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='login.css') }}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #001489;
+            color: #ffffff;
+        }
+        .card {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .btn-primary {
+            background-color: #f5c445;
+            border-color: #f5c445;
+        }
+        .form-control {
+            background-color: #ffffff;
+            border-color: #001489;
+        }
+        .form-label {
+            color: #000000;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>Thrifty Owl & Swap Shop</h1>
-    <h2>Login</h2>
-    {% if error_message %}
-    <div class="alert alert-danger" role="alert">
-        {{ error_message }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card p-4">
+                <h1 class="text-center mb-3">Thrifty Owl & Swap Shop</h1>
+                <h2 class="text-center mb-4">Login</h2>
+                {% if error_message %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+                <form method="POST" action="" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ form.username.label(class_='form-label') }}
+                        {{ form.username(class_='form-control', placeholder='Username') }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.password.label(class_='form-label') }}
+                        {{ form.password(class_='form-control', placeholder='Password') }}
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('register') }}" class="text-dark">Don't have an account? Sign Up</a>
+                    <br>
+                    <a href="{{ url_for('forgot_password') }}" class="text-dark">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
-    <form method="POST" action="">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.username.label }}
-            {{ form.username }}
-        </div>
-        <div class="form-group">
-            {{ form.password.label }}
-            {{ form.password }}
-        </div>
-        <button type="submit" class="btn">Login</button>
-    </form>
-    <a href="{{ url_for('register') }}">Don't have an account? Sign Up</a>
-    <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
 </div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

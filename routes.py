@@ -211,6 +211,11 @@ def swapshopbase():
     # Code here
     return render_template('swapshopbase.html')
 
+@app.route('/dashboard_swap_shop')
+@login_required
+def dashboard_swap_shop():
+    return render_template('dashboard_swap_shop.html')
+
 @app.route('/print_barcode/<barcode>', methods=['GET'])
 def print_barcode(barcode):
     barcode_img = generate_barcode_image(barcode)

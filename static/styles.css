@@ -1,26 +1,75 @@
-body {
+/* Reset margins and paddings for a consistent start */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-nav {
-    background-color: #f8f8f8;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+body {
+    font-family: Arial, sans-serif; /* Default font */
+    background-color: #f4f4f4; /* Light background for the content area */
+    color: #333; /* Default text color for better readability */
+    line-height: 1.6; /* Improve text readability */
 }
 
-ul {
-    list-style-type: none;
+/* Navigation Bar Styles */
+.navbar {
+    background-color: #001489 !important; /* Dark blue background */
+    padding: 0.5rem 1rem; /* Adjust padding for the navbar */
 }
 
-a {
-    text-decoration: none;
-    color: #333;
-    font-weight: bold;
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: #f5c445 !important; /* Gold/yellow text color */
 }
 
+.navbar .nav-link {
+    margin-right: 1rem; /* Space between navigation links */
+}
+
+.navbar .nav-link:hover,
+.navbar .navbar-brand:hover {
+    color: #fff !important; /* Slightly lighter color on hover */
+}
+
+/* Style the dropdown menu with a dark blue background and gold/yellow text */
+.navbar .dropdown-menu {
+    background-color: #001489;
+}
+
+.navbar .dropdown-item {
+    color: #f5c445 !important;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: #f5c445;
+    color: #001489 !important;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #f5c445; /* Use the gold/yellow for primary buttons */
+    border-color: #f5c445; /* Match the border with the background color */
+    color: #001489; /* Dark blue text to contrast the yellow background */
+}
+
+.btn-primary:hover {
+    background-color: #ffd700; /* Lighter yellow on hover */
+    border-color: #ffd700;
+}
+
+/* Content Styles */
 #content {
-    padding: 20px;
+    padding: 20px; /* Space around the main content */
+}
+
+/* Utility Classes */
+.text-primary {
+    color: #001489 !important; /* Primary text color utility class */
+}
+
+.bg-primary {
+    background-color: #001489 !important; /* Primary background color utility class */
 }

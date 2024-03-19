@@ -2,99 +2,132 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='register.css') }}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #001489;
+            color: #ffffff;
+        }
+        .card {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .btn-primary {
+            background-color: #f5c445;
+            border-color: #f5c445;
+        }
+        .form-control {
+            background-color: #ffffff;
+            border-color: #001489;
+        }
+        .form-label {
+            color: #000000;
+        }
+        .errors {
+            color: red;
+            margin: 0;
+            padding: 0;
+        }
+        .errors li {
+            list-style-type: none;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>Register Page</h1>
-
-    <form method="POST" action="" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-
-        <div>
-            <label for="first_name">First Name:</label>
-            {{ form.first_name }}
-            {% if form.first_name.errors %}
-                <ul class="errors">
-                    {% for error in form.first_name.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-
-        <div>
-            <label for="last_name">Last Name:</label>
-            {{ form.last_name }}
-            {% if form.last_name.errors %}
-                <ul class="errors">
-                    {% for error in form.last_name.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-
-        <div>
-            {{ form.username.label }} {{ form.username }}
-            {% if form.username.errors %}
-                <ul class="errors">
-                    {% for error in form.username.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-
-        <div>
-            {{ form.email.label }} {{ form.email }}
-            {% if form.email.errors %}
-                <ul class="errors">
-                    {% for error in form.email.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-
-        <div>
-            {{ form.password.label }} {{ form.password }}
-            {% if form.password.errors %}
-                <ul class="errors">
-                    {% for error in form.password.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-
-        <div>
-            {{ form.role.label }} {{ form.role }}
-            {% if form.role.errors %}
-                <ul class="errors">
-                    {% for error in form.role.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div>
-            {{ form.picture.label }} {{ form.picture }}
-            {% if form.picture.errors %}
-                <ul class="errors">
-                    {% for error in form.picture.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        {{ form.submit }}
-    </form>
-
-    <a href="{{ url_for('login') }}">Already have an account? Log In</a>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h1 class="text-center mb-3">Thrifty Owl & Swap Shop</h1>
+                <h2 class="text-center mb-4">Register</h2>
+                <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="form-group mb-3">
+                        {{ form.first_name.label(class_='form-label') }}
+                        {{ form.first_name(class_='form-control') }}
+                        {% if form.first_name.errors %}
+                            <ul class="errors">
+                                {% for error in form.first_name.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.last_name.label(class_='form-label') }}
+                        {{ form.last_name(class_='form-control') }}
+                        {% if form.last_name.errors %}
+                            <ul class="errors">
+                                {% for error in form.last_name.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.username.label(class_='form-label') }}
+                        {{ form.username(class_='form-control') }}
+                        {% if form.username.errors %}
+                            <ul class="errors">
+                                {% for error in form.username.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.email.label(class_='form-label') }}
+                        {{ form.email(class_='form-control') }}
+                        {% if form.email.errors %}
+                            <ul class="errors">
+                                {% for error in form.email.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.password.label(class_='form-label') }}
+                        {{ form.password(class_='form-control') }}
+                        {% if form.password.errors %}
+                            <ul class="errors">
+                                {% for error in form.password.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.role.label(class_='form-label') }}
+                        {{ form.role(class_='form-control') }}
+                        {% if form.role.errors %}
+                            <ul class="errors">
+                                {% for error in form.role.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form.picture.label(class_='form-label') }}
+                        {{ form.picture(class_='form-control') }}
+                        {% if form.picture.errors %}
+                            <ul class="errors">
+                                {% for error in form.picture.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        {{ form.submit(class_='btn btn-primary') }}
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('login') }}" class="text-dark">Already have an account? Log In</a>
 </div>
 </body>
 

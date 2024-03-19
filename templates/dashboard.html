@@ -3,37 +3,41 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2>Thrifty Owl Inventory</h2>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Thrifty Owl Inventory</h2>
 
-<!-- Inventory window -->
-<div class="inventory-window">
-    <input type="text" id="scannedBarcode" readonly>
+    <!-- Inventory window -->
+    <div class="d-flex justify-content-between mb-3">
+        <input type="text" id="scannedBarcode" readonly class="form-control me-2" placeholder="Scanned Barcode">
+        <button id="addItemBtn" class="btn btn-primary"><i class="fas fa-plus"></i> New Item</button>
+    </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead>
+        <table class="table table-striped table-bordered">
+            <thead class="table-light">
                 <tr>
-                    <th>Item Name</th>
-                    <th>Material</th>
-                    <th>Weight (kg)</th>
-                    <th>Stock</th>
-                    <th>Value Per Item</th>
-                    <th>Action</th>
+                    <th scope="col">Item Name</th>
+                    <th scope="col">Material</th>
+                    <th scope="col">Weight (kg)</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Value per Item</th>
+                    <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody id="inventoryBody">
+                <!-- Dynamic content will be loaded here -->
             </tbody>
         </table>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    fetchInventory();
-    scanBarcode();
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchInventory();
+        scanBarcode();
+    });
 
-function fetchInventory() {
+    function fetchInventory() {
     fetch(`/get_inventory`)
         .then(response => response.json())
         .then(data => {
@@ -45,13 +49,13 @@ function fetchInventory() {
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
-                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
+                    <td><span id="quantity_${item.id}" class="stock-quantity">${item.stock}</span></td>
                     <td>${item.value_per_item}</td>
-                    <td>
-                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
-                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Update </button>
-                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="bi bi-printer"></i> Print Barcode</button>
-                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                    <td class="action-buttons">
+                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 inventoryBody.appendChild(row);
@@ -61,61 +65,84 @@ function fetchInventory() {
 }
 
 function updateQuantity(itemId) {
+    // Retrieve the current quantity from the document
     const quantityInput = document.getElementById(`quantity_${itemId}`);
-    const quantityToAdd = parseInt(prompt("Enter the quantity to add:"));
+    const currentQuantity = parseInt(quantityInput.value) || 0;
 
-    if (!isNaN(quantityToAdd) && quantityToAdd > 0) {
-        const donorInfo = prompt("Enter donor information:");
-        if (donorInfo !== null && donorInfo.trim() !== '') {
-            const newQuantity = parseInt(quantityInput.value) + quantityToAdd;
+    Swal.fire({
+        title: 'Enter the quantity to add:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.isConfirmed && quantityResult.value > 0) {
+            const quantityToAdd = parseInt(quantityResult.value);
+            // Calculate the new total quantity
+            const newQuantity = currentQuantity + quantityToAdd;
 
-            fetch('/update_quantity', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: itemId, new_quantity: newQuantity, donor_info: donorInfo }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    quantityInput.value = newQuantity;
-                    alert(data.message);
+            Swal.fire({
+                title: 'Enter donor information:',
+                input: 'text',
+                confirmButtonText: 'Update',
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'You need to write something!';
+                    }
+                }
+            }).then((donorResult) => {
+                if (donorResult.isConfirmed && donorResult.value.trim() !== '') {
+                    const donorInfo = donorResult.value.trim();
 
-                    fetch('/create_intake_transaction', {
+                    fetch('/update_quantity', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            inventory_id: itemId,
-                            item_name: "Item Name",
-                            quantity: quantityToAdd,
+                            id: itemId,
+                            new_quantity: newQuantity, // Use the calculated new quantity
                             donor_info: donorInfo
                         }),
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Optionally, you can perform additional actions if needed
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: data.message,
+                            });
+                            // Update the quantity in the document to reflect the new total
+                            quantityInput.value = newQuantity;
                         } else {
-                            alert(data.message);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                            });
                         }
                     })
-                    .catch(error => console.error('Error:', error));
-
-                } else {
-                    alert(data.message);
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while updating the quantity.',
+                        });
+                        console.error('Error:', error);
+                    });
                 }
-            })
-            .catch(error => console.error('Error:', error));
-        } else {
-            alert("Please enter donor information.");
+            });
         }
-    } else {
-        alert("Please enter a valid quantity to add.");
-    }
+    });
 }
+
 
 function printBarcode(barcode) {
     if (barcode !== null) {
@@ -137,58 +164,141 @@ function printBarcode(barcode) {
     }
 }
 
-function confirmDelete(itemId) {
-    if (confirm("Are you sure you want to delete this item?")) {
-        deleteItem(itemId);
-    }
-}
-
 function deleteItem(itemId) {
-    fetch('/delete_item', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: itemId }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                document.getElementById(`item_${itemId}`).remove();
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/delete_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: itemId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Deleted!',
+                        'Your item has been deleted.',
+                        'success'
+                    );
+                    // Remove the item row from the table or refresh the page
+                    document.getElementById(`item_${itemId}`).remove();
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'An error occurred while deleting the item.',
+                    'error'
+                );
+            });
+        }
+    });
 }
 
 
 
 function releaseItem(itemId, itemName) {
-    var quantity = prompt("Enter the quantity to release:");
-    var donorInfo = prompt("Enter donor information:");
-    if (quantity !== null && !isNaN(quantity) && quantity.trim() !== '' && donorInfo !== null && donorInfo.trim() !== '') {
-        fetch('/release_item', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ item_name: itemName, item_id: itemId, quantity: parseInt(quantity), donor_info: donorInfo }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert(data.message);
+    // Retrieve the current quantity from the document
+    const quantityInput = document.getElementById(`quantity_${itemId}`);
+    const currentQuantity = parseInt(quantityInput.value) || 0;
+
+    Swal.fire({
+        title: 'Enter the quantity to release:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.isConfirmed && quantityResult.value > 0) {
+            const quantityToRelease = parseInt(quantityResult.value);
+            // Prevent releasing more than the current stock
+            if (quantityToRelease > currentQuantity) {
+                Swal.fire('Error', 'Cannot release more than the current stock.', 'error');
+                return;
+            }
+            const newQuantity = currentQuantity - quantityToRelease;
+
+            Swal.fire({
+                title: 'Enter donor information:',
+                input: 'text',
+                confirmButtonText: 'Release',
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'You need to write something!';
+                    }
                 }
-            })
-            .catch(error => console.error('Error:', error));
-    } else {
-        alert("Please enter a valid quantity and donor information.");
-    }
+            }).then((donorResult) => {
+                if (donorResult.isConfirmed && donorResult.value.trim() !== '') {
+                    const donorInfo = donorResult.value.trim();
+
+                    fetch('/release_item', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            item_id: itemId,
+                            item_name: itemName,
+                            quantity: quantityToRelease, // Use the input quantity directly for release
+                            donor_info: donorInfo,
+                            new_quantity: newQuantity // Optional: depending on your backend logic
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: data.message,
+                            });
+                            // Update the document to reflect the new quantity
+                            quantityInput.value = newQuantity;
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while releasing the item.',
+                        });
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        }
+    });
 }
+
 
 function scanBarcode() {
     document.getElementById('scannedBarcode').addEventListener('keypress', function (event) {
@@ -215,5 +325,8 @@ function scanBarcode() {
         }
     });
 }
+// Add item SweetAlert
+
+
 </script>
 {% endblock %}
