@@ -1,10 +1,22 @@
 {% extends "ssbase.html" %}
 {% block content %}
 <h1>Swap Shop Inventory</h1>
-<div class="inventory-window">
-    <div>
-        <input type="text" id="searchInput" placeholder="Search by Item Name">
+<div id="itemDetailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-container"><span class="close">&times;</span></span>
+      <h2>Item Details</h2>
+      <p id="itemName"></p>
+      <p id="itemMaterial"></p>
+      <p id="itemWeight"></p>
+      <p id="itemStock"></p>
+      <p id="itemValue"></p>
     </div>
+</div>
+<div class="inventory-window">
+    <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
+<div>
+    <input type="text" id="searchInput" placeholder="Search by Item Name">
+</div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
@@ -40,10 +52,124 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
+
 document.addEventListener('DOMContentLoaded', function() {
+    fetchInventory();
     scanBarcode();
+    // Create a new div for the buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+
+    // Create the Update button
+    const updateButton = document.createElement('button');
+    updateButton.onclick = function() { updateQuantity(itemId); };
+    updateButton.className = 'btn btn-primary modal-button';
+    updateButton.textContent = 'Update';
+
+    // Create the Release button
+    const releaseButton = document.createElement('button');
+    releaseButton.onclick = function() { releaseItem(itemId, data.item_name); };
+    releaseButton.className = 'btn btn-primary modal-button';
+    releaseButton.textContent = 'Release';
+
+    // Add the buttons to the buttonContainer
+    buttonContainer.appendChild(updateButton);
+    buttonContainer.appendChild(releaseButton);
+
+    // Add the buttonContainer to the modalContent
+    modalContent.appendChild(buttonContainer);
+
+    // Set focus on the barcode input field
+    document.getElementById('scannedBarcode').focus();
+
+    // Get the modal and the close button
+    var modal = document.getElementById('itemDetailsModal');
+    var closeButton = document.querySelector('.close');
+
+    // When the user clicks on the close button, close the modal
+    closeButton.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
 });
 
+function showItemDetails(itemId) {
+    fetch(`/get_ssitem_details/${itemId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('itemName').innerText = "Item Name: " + data.item_name;
+            document.getElementById('itemMaterial').innerText = "Material: " + data.material;
+            document.getElementById('itemWeight').innerText = "Weight: " + data.weight;
+            document.getElementById('itemStock').innerText = "Stock: " + data.stock;
+            document.getElementById('itemValue').innerText = "Value Per Item: " + data.value_per_item;
+
+            // Add Update and Release buttons to the modal
+            const modalContent = document.querySelector('.modal-content');
+            
+            // Clear previous buttons
+            const oldButtons = modalContent.querySelectorAll('button');
+            oldButtons.forEach(button => button.remove());
+
+            modalContent.innerHTML += `
+            <div class="button-container">
+                <button onclick="updateQuantity(${itemId})" class="btn btn-primary modal-button">Update</button>
+                <button onclick="releaseItem(${itemId}, '${data.item_name}')" class="btn btn-primary modal-button">Release</button>
+            </div>
+            `;
+
+            // Show the modal
+            document.getElementById('itemDetailsModal').style.display = "block";
+
+            // Get the modal and the close button
+            var modal = document.getElementById('itemDetailsModal');
+            var closeButton = document.querySelector('.close');
+
+            // When the user clicks on the close button, close the modal
+            closeButton.onclick = function() {
+              modal.style.display = "none";
+            }
+
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+              if (event.target == modal) {
+                modal.style.display = "none";
+              }
+            }
+        });
+}
+
+function fetchInventory() {
+    fetch(`/get_swap_shop_inventory`)
+        .then(response => response.json())
+        .then(data => {
+            const inventoryBody = document.getElementById('inventoryBody');
+            inventoryBody.innerHTML = '';
+            data.inventory.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.item_name}</td>
+                    <td>${item.material}</td>
+                    <td>${item.weight}</td>
+                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
+                    <td>${item.value_per_item}</td>
+                    <td>
+                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
+                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Update </button>
+                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="bi bi-printer"></i> Print Barcode</button>
+                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                    </td>
+                `;
+                inventoryBody.appendChild(row);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
 function printBarcode(barcode) {
     if (barcode !== null) {
         const barcodeImage = new Image();
@@ -77,12 +203,17 @@ function releaseItem(itemId, itemName) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
                 // Update the quantity without reloading the page
                 var quantityInput = document.getElementById(`quantity_${itemId}`);
                 var currentQuantity = parseInt(quantityInput.value);
                 var releasedQuantity = parseInt(quantity);
                 quantityInput.value = currentQuantity - releasedQuantity; // Decrease the quantity
+                //Update the modal's stock display
+                var modalStock = document.getElementById('itemStock');
+                var currentStock = parseInt(modalStock.innerText.split(' ')[1]);
+                modalStock.innerText = "Stock: " + (currentStock - releasedQuantity);
+                
+                alert(data.message);
             } else {
                 alert(data.message);
             }
@@ -113,7 +244,14 @@ function updateQuantity(itemId) {
                     // Update the quantity without reloading the page
                     const currentQuantity = parseInt(quantityInput.value);
                     quantityInput.value = currentQuantity + quantityToAdd; // Add the entered quantity to the current quantity
+
+                    //Update the modal's stock display
+                    const modalStock = document.getElementById('itemStock');
+                    const currentStock = parseInt(modalStock.innerText.split(' ')[1]);
+                    modalStock.innerText = "Stock: " + (currentStock + quantityToAdd);
+
                     alert(data.message);
+
                 } else {
                     alert(data.message);
                 }
@@ -128,28 +266,41 @@ function updateQuantity(itemId) {
 }
 
 function scanBarcode() {
-    document.getElementById('scannedBarcode').addEventListener('keypress', function (event) {
-        if (event.keyCode === 13) {
-            const scannedBarcode = this.value.trim();
-            this.value = '';
+    let scannedBarcode = '';
+    let timer = null;
+    const inputField = document.getElementById('scannedBarcode');
 
-            fetch('/scan_barcode', {
+    inputField.addEventListener('input', function (event) {
+        clearTimeout(timer);
+        scannedBarcode = event.target.value;
+
+        timer = setTimeout(function() {
+            const payload = JSON.stringify({ barcode: scannedBarcode });
+            console.log('Sending barcode:', scannedBarcode); // Log the barcode being sent
+
+            fetch('/scan_barcode_swap_shop', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ barcode: scannedBarcode }),
+                body: payload,
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+            .then(response => response.json())
+            .then(data => {
+                console.log('Received:', data); // Log the server response
+                if (data.success) {
+                    // Call the showItemDetails function with the item id
+                    showItemDetails(data.itemId);
+                } else {
+                    alert(`Item not found: ${scannedBarcode}. ${data.message}`);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
+            // Clear the input field and scannedBarcode variable
+            scannedBarcode = '';
+            inputField.value = '';
+        }, 500); // Wait for 500ms after the last input to send the barcode
     });
 }
 document.getElementById('searchInput').addEventListener('input', function() {

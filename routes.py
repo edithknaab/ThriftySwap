@@ -83,6 +83,21 @@ def scan_barcode():
         return jsonify({'success': True, 'message': 'Item found', 'itemId': inventory_item.id})
     else:
         return jsonify({'success': False, 'message': 'Item not found'})
+    
+@app.route('/scan_barcode_swap_shop', methods=['POST'])
+@login_required
+def scan_barcode_swap_shop():
+    data = request.json
+    barcode = data.get('barcode')
+    print('Received barcode:', barcode)  # Log the received barcode
+
+    item = SwapShopInventory.query.filter_by(barcode=barcode).first()
+    print('Query result:', item)  # Log the result of the database query
+
+    if item:
+        return jsonify({'success': True, 'itemId': item.id, 'item_name': item.item_name, 'material': item.material, 'weight': item.weight, 'stock': item.stock, 'value_per_item': str(item.value_per_item), 'barcode': item.barcode})
+    else:
+        return jsonify({'success': False, 'message': 'Item not found'})
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -349,6 +364,24 @@ def get_item_details(id):
 
     # Return the item data as JSON
     return jsonify(item_data)
+
+@app.route('/get_ssitem_details/<int:item_id>', methods=['GET'])
+@login_required
+def get_ssitem_details(item_id):
+    item = SwapShopInventory.query.get(item_id)
+    if item:
+        return jsonify({
+            'success': True,
+            'item_id': item.id,
+            'item_name': item.item_name,
+            'material': item.material,
+            'weight': item.weight,
+            'stock': item.stock,
+            'value_per_item': str(item.value_per_item),
+            'barcode': item.barcode
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Item not found'})
 
 @app.route('/filter_inventory')
 def filter_inventory():
