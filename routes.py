@@ -262,23 +262,34 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route('/update_quantity', methods=['POST'])
+@login_required
 def update_quantity():
     try:
         data = request.get_json()
         item_id = data['id']
-        new_quantity = data.get('new_quantity')
-        
+        quantity_to_add = int(data.get('new_quantity'))
+        donor_info = data.get('donor_info')
+
         inventory_item = Inventory.query.get(item_id)
         if inventory_item:
-            inventory_item.stock = new_quantity
+            intake_transaction = IntakeTransaction(
+                inventory_id=item_id,
+                item_name=inventory_item.item_name,  # Corrected attribute
+                quantity=quantity_to_add,
+                user=current_user.username,  # Assuming the user model has a username field
+                donor_info=donor_info,
+                timestamp=datetime.utcnow()
+            )
+            db.session.add(intake_transaction)
+
+            inventory_item.stock += quantity_to_add  # Add the quantity to the existing stock
             db.session.commit()
             return jsonify({'success': True, 'message': 'Quantity updated successfully'})
         else:
             return jsonify({'success': False, 'message': 'Item not found'}), 404
     except KeyError as e:
         return jsonify({'success': False, 'message': f'Missing field: {str(e)}'}), 400
-
-
+    
 @app.route('/get_inventory', methods=['GET'])
 def get_inventory():
     inventory_items = Inventory.query.all()
@@ -427,11 +438,12 @@ def thriftyowlrecords():
 def collect_intake_info(intake_transactions):
     intake_info = {}
     for transaction in intake_transactions:
-        item_name = transaction.inventory.item_name
-        if item_name in intake_info:
-            intake_info[item_name].append(transaction)
-        else:
-            intake_info[item_name] = [transaction]
+        if transaction.inventory is not None:
+            item_name = transaction.inventory.item_name
+            if item_name in intake_info:
+                intake_info[item_name].append(transaction)
+            else:
+                intake_info[item_name] = [transaction]
     return intake_info
 
 @app.route('/filter_by_day', methods=['GET'])
@@ -540,7 +552,7 @@ def swapshoprecords():
     outtake_transactions = SwapShopOuttakeTransaction.query.all()
 
     # Collect intake information into a dictionary
-    intake_info = collect_intake_info(intake_transactions)
+    intake_info = collect_swap_shop_intake_info(intake_transactions)
     donor_info = SwapShopIntakeTransaction.query.all()
     donor_info = SwapShopOuttakeTransaction.query.all()
 
@@ -604,7 +616,7 @@ def create_swapshop_outtake_transaction():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
-def collect_intake_info(intake_transactions):
+def collect_swap_shop_intake_info(intake_transactions):
     intake_info = {}
     for transaction in intake_transactions:
         # Check if the transaction is of type SwapShopIntakeTransaction
@@ -655,12 +667,15 @@ def update_quantity_ss():
         data = request.json
         item_id = data.get('item_id')
         quantity_to_add = int(data.get('quantity_to_add'))  # Change 'new_quantity' to 'quantity_to_add'
+        donor_info = data.get('donor_info')
 
         inventory_item = SwapShopInventory.query.get(item_id)
         if inventory_item:
             intake_transaction = SwapShopIntakeTransaction(
                 swap_shop_inventory_id=item_id,
                 quantity=quantity_to_add,  # Use the quantity to add directly
+                user=current_user.username,
+                donor_info=donor_info,
                 timestamp=datetime.utcnow()
             )
             db.session.add(intake_transaction)
