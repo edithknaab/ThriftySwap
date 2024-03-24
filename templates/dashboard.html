@@ -173,7 +173,7 @@ function updateQuantity(itemId) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id: itemId, new_quantity: newQuantity, donor_info: donorInfo }),
+                body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }),
             })
             .then(response => response.json())
             .then(data => {
