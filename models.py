@@ -85,7 +85,6 @@ class SwapShopIntakeTransaction(db.Model):
     user = db.Column(db.String)  
     timestamp = db.Column(db.DateTime)
     donor_info = db.Column(db.String)
-    swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)
     swap_shop_inventory = db.relationship('SwapShopInventory', back_populates='swap_shop_intake_transactions')
 
 
