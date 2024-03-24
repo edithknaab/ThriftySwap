@@ -109,10 +109,10 @@ function showItemDetails(itemId) {
             document.getElementById('itemStock').innerText = "Stock: " + data.stock;
             document.getElementById('itemValue').innerText = "Value Per Item: " + data.value_per_item;
 
-            // Add Update and Release buttons to the modal
+            
             const modalContent = document.querySelector('.modal-content');
             
-            // Clear previous buttons
+            
             const oldButtons = modalContent.querySelectorAll('button');
             oldButtons.forEach(button => button.remove());
 
@@ -123,19 +123,19 @@ function showItemDetails(itemId) {
             </div>
             `;
 
-            // Show the modal
+            
             document.getElementById('itemDetailsModal').style.display = "block";
 
-            // Get the modal and the close button
+            
             var modal = document.getElementById('itemDetailsModal');
             var closeButton = document.querySelector('.close');
 
-            // When the user clicks on the close button, close the modal
+            
             closeButton.onclick = function() {
               modal.style.display = "none";
             }
 
-            // When the user clicks anywhere outside of the modal, close it
+            
             window.onclick = function(event) {
               if (event.target == modal) {
                 modal.style.display = "none";
@@ -203,12 +203,12 @@ function releaseItem(itemId, itemName) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update the quantity without reloading the page
+                
                 var quantityInput = document.getElementById(`quantity_${itemId}`);
                 var currentQuantity = parseInt(quantityInput.value);
                 var releasedQuantity = parseInt(quantity);
                 quantityInput.value = currentQuantity - releasedQuantity; // Decrease the quantity
-                //Update the modal's stock display
+                
                 var modalStock = document.getElementById('itemStock');
                 var currentStock = parseInt(modalStock.innerText.split(' ')[1]);
                 modalStock.innerText = "Stock: " + (currentStock - releasedQuantity);
@@ -236,16 +236,16 @@ function updateQuantity(itemId) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ item_id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }), // Change 'new_quantity' to 'quantity_to_add'
+                body: JSON.stringify({ item_id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }), 
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update the quantity without reloading the page
+                    
                     const currentQuantity = parseInt(quantityInput.value);
-                    quantityInput.value = currentQuantity + quantityToAdd; // Add the entered quantity to the current quantity
+                    quantityInput.value = currentQuantity + quantityToAdd; 
 
-                    //Update the modal's stock display
+                    
                     const modalStock = document.getElementById('itemStock');
                     const currentStock = parseInt(modalStock.innerText.split(' ')[1]);
                     modalStock.innerText = "Stock: " + (currentStock + quantityToAdd);
@@ -276,7 +276,7 @@ function scanBarcode() {
 
         timer = setTimeout(function() {
             const payload = JSON.stringify({ barcode: scannedBarcode });
-            console.log('Sending barcode:', scannedBarcode); // Log the barcode being sent
+            console.log('Sending barcode:', scannedBarcode); 
 
             fetch('/scan_barcode_swap_shop', {
                 method: 'POST',
@@ -287,9 +287,9 @@ function scanBarcode() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Received:', data); // Log the server response
+                console.log('Received:', data); 
                 if (data.success) {
-                    // Call the showItemDetails function with the item id
+                    
                     showItemDetails(data.itemId);
                 } else {
                     alert(`Item not found: ${scannedBarcode}. ${data.message}`);
@@ -297,10 +297,10 @@ function scanBarcode() {
             })
             .catch(error => console.error('Error:', error));
 
-            // Clear the input field and scannedBarcode variable
+            
             scannedBarcode = '';
             inputField.value = '';
-        }, 500); // Wait for 500ms after the last input to send the barcode
+        }, 500); 
     });
 }
 document.getElementById('searchInput').addEventListener('input', function() {
@@ -310,9 +310,9 @@ document.getElementById('searchInput').addEventListener('input', function() {
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
         if (itemName.includes(searchTerm)) {
-            row.style.display = ''; // Show the row if item name matches search term
+            row.style.display = ''; 
         } else {
-            row.style.display = 'none'; // Hide the row if item name doesn't match search term
+            row.style.display = 'none'; 
         }
     });
 });

@@ -56,7 +56,7 @@
                 {% for item, intake_data in intake_info.items() %}
                 <tr>
                     {% for intake_transaction in intake_data %}
-                    <!-- Separate intake transaction information into different columns -->
+                    
                     <td>{{ intake_transaction.inventory.item_name }}</td>
                     <td>{{ intake_transaction.inventory.material }}</td>
                     <td>{{ intake_transaction.inventory.value_per_item }}</td>
@@ -72,7 +72,7 @@
                     </td>
                     <td>{{ intake_transaction.quantity }}</td>
                     <td>{{ intake_transaction.donor_info }}</td>
-                    </tr><tr><!-- Create a new row for each intake transaction -->
+                    
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -92,7 +92,7 @@
                     <th>Item</th>
                     <th>Quantity</th>
                     <th>Weight</th>
-                    <th>Total Weight</th> <!-- Added total weight column -->
+                    <th>Total Weight</th> 
                     <th>Donor Information</th>
                     <th>Value Per Item</th>
                     <th>Timestamp</th>
@@ -104,10 +104,10 @@
                 <tr>
                     <td>{{ outtake_transaction.inventory.item_name }}</td> 
                     <td>{{ outtake_transaction.quantity }}</td>
-                    <td>{{ outtake_transaction.inventory.weight }}</td> <!-- Access weight from the inventory -->
-                    <td>{{ outtake_transaction.inventory.weight * outtake_transaction.quantity }}</td> <!-- Calculate and display total weight -->
+                    <td>{{ outtake_transaction.inventory.weight }}</td> 
+                    <td>{{ outtake_transaction.inventory.weight * outtake_transaction.quantity }}</td> 
                     <td>{{ outtake_transaction.donor_info }}</td>
-                    <td>{{ outtake_transaction.inventory.value_per_item }}</td> <!-- Access value_per_item from the inventory -->
+                    <td>{{ outtake_transaction.inventory.value_per_item }}</td> 
                     <td>
                         <script>
                             var timestampString = "{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
@@ -118,7 +118,7 @@
                             document.write(easternDate + " " + easternTime);
                         </script>
                     </td>                    
-                    <td>{{ outtake_transaction.inventory.value_per_item * outtake_transaction.quantity }}</td> <!-- Calculate and display total amount -->
+                    <td>{{ outtake_transaction.inventory.value_per_item * outtake_transaction.quantity }}</td> 
                 </tr>
                 {% endfor %}
             </tbody>
@@ -126,7 +126,7 @@
     </div>  
 
     <script>
-        // JavaScript functions for filtering and printing intake table
+        
         function filterIntakeTable() {
             var input, filter, table, tr, td, i, txtValue;
             input = document.getElementById("intake-date-filter");
@@ -134,7 +134,7 @@
             table = document.getElementById("intake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[4]; // Assuming timestamp is in the 5th column
+                td = tr[i].getElementsByTagName("td")[4]; 
                 if (td) {
                     txtValue = td.textContent || td.innerText;
                     if (txtValue.indexOf(filter) > -1) {
@@ -154,7 +154,7 @@
             document.body.innerHTML = originalContents;
         }
 
-        // JavaScript functions for filtering and printing outtake table
+        
         function filterOuttakeTable() {
             var input, filter, table, tr, td, i, txtValue;
             input = document.getElementById("outtake-date-filter");
@@ -162,7 +162,7 @@
             table = document.getElementById("outtake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[6]; // Assuming timestamp is in the 7th column
+                td = tr[i].getElementsByTagName("td")[6]; 
                 if (td) {
                     txtValue = td.textContent || td.innerText;
                     if (txtValue.indexOf(filter) > -1) {

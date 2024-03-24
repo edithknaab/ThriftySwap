@@ -45,7 +45,7 @@ class IntakeTransaction(db.Model):
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))
     item_name = db.Column(db.String(50))
     quantity = db.Column(db.Integer)
-    user = db.Column(db.String)  # Assuming you have a user field
+    user = db.Column(db.String)  
     timestamp = db.Column(db.DateTime)
     donor_info = db.Column(db.String)
     inventory = db.relationship('Inventory', back_populates='intake_transactions')
@@ -55,11 +55,11 @@ class OuttakeTransaction(db.Model):
     __tablename__ = 'outtake_transaction'
     id = db.Column(db.Integer, primary_key=True)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
-    item_name = db.Column(db.String(50))  # Add this field to store the item name
+    item_name = db.Column(db.String(50))  
     quantity = db.Column(db.Integer, nullable=False)
     donor_info = db.Column(db.String)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-     # Define the relationship with the Inventory model
+     
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
     inventory = db.relationship('Inventory', back_populates='outtake_transactions')
 
@@ -82,7 +82,7 @@ class SwapShopIntakeTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    user = db.Column(db.String)  # Assuming you have a user field
+    user = db.Column(db.String)  
     timestamp = db.Column(db.DateTime)
     donor_info = db.Column(db.String)
     swap_shop_inventory_id = db.Column(db.Integer, db.ForeignKey('swap_shop_inventory.id'), nullable=False)

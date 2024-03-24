@@ -94,7 +94,7 @@
     </div>  
 
     <script>
-     // Calculate and display total value for intake table
+     
      var intakeTable = document.getElementById("intake-table");
         var intakeRows = intakeTable.getElementsByTagName("tr");
         var intakeTotal = 0;
@@ -104,7 +104,7 @@
         }
         document.getElementById("intake-total").innerText = "Total Value: " + intakeTotal.toFixed(2);
 
-        // Calculate and display total value for outtake table
+        
         var outtakeTable = document.getElementById("outtake-table");
         var outtakeRows = outtakeTable.getElementsByTagName("tr");
         var outtakeTotal = 0;
@@ -122,8 +122,8 @@
             table = document.getElementById("intake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Item name column
-                var donor_info_td = tr[i].getElementsByTagName("td")[3]; // Donor info column
+                var item_name_td = tr[i].getElementsByTagName("td")[0]; 
+                var donor_info_td = tr[i].getElementsByTagName("td")[3]; 
                 if (item_name_td || donor_info_td) {
                     var item_name_text = item_name_td.textContent || item_name_td.innerText;
                     var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
@@ -143,8 +143,8 @@
             table = document.getElementById("outtake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Item name column
-                var donor_info_td = tr[i].getElementsByTagName("td")[3]; // Donor info column
+                var item_name_td = tr[i].getElementsByTagName("td")[0]; 
+                var donor_info_td = tr[i].getElementsByTagName("td")[3]; 
                 if (item_name_td || donor_info_td) {
                     var item_name_text = item_name_td.textContent || item_name_td.innerText;
                     var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
