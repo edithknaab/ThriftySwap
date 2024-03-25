@@ -52,35 +52,41 @@
                     <th>Timestamp</th>
                     <th>Amount Donated</th>
                     <th>Donor Information</th>
+                    <th>Edit</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item, intake_data in intake_info.items() %}
-                <tr>
                     {% for intake_transaction in intake_data %}
-                    <!-- Separate intake transaction information into different columns -->
-                    <td>{{ intake_transaction.inventory.item_name }}</td>
-                    <td>{{ intake_transaction.inventory.material }}</td>
-                    <td>{{ intake_transaction.inventory.value_per_item }}</td>
-                    <td>{{ intake_transaction.inventory.weight }}</td>
-                    <td>
-                        <script>
-                            var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
-                            var timestamp = new Date(timestampString);
-                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
-                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
-                            document.write(easternDate + " " + easternTime);
-                        </script>
-                    </td>                                  
-                    <td>{{ intake_transaction.quantity }}</td>
-                    <td>{{ intake_transaction.donor_info }}</td>
-                    </tr><tr><!-- Create a new row for each intake transaction -->
+                        <tr>
+                            <!-- Item Information -->
+                            <td>{{ intake_transaction.inventory.item_name }}</td>
+                            <td>{{ intake_transaction.inventory.material }}</td>
+                            <td>{{ intake_transaction.inventory.value_per_item }}</td>
+                            <td>{{ intake_transaction.inventory.weight }}</td>
+                            <!-- Timestamp -->
+                            <td>
+                                <script>
+                                    var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
+                                    var timestamp = new Date(timestampString);
+                                    var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
+                                    var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
+                                    document.write(easternDate + " " + easternTime);
+                                </script>
+                            </td>
+                            <!-- Amount Donated -->
+                            <td>{{ intake_transaction.quantity }}</td>
+                            <!-- Donor Information -->
+                            <td>{{ intake_transaction.donor_info }}</td>
+                            <!-- Edit Button -->
+                            <td><button onclick="editRow(this)">Edit</button></td>
+                        </tr>
                     {% endfor %}
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>    
+        
+    </div>   
     
     <div>
         <h2>Outtake History</h2>
@@ -99,6 +105,7 @@
                     <th>Value Per Item</th>
                     <th>Timestamp</th>
                     <th>Total Value</th>
+                    <th> Edit </th>
                 </tr>
             </thead>
             <tbody>
@@ -121,6 +128,7 @@
                         </script>
                     </td>                    
                     <td>{{ outtake_transaction.inventory.value_per_item * outtake_transaction.quantity }}</td> 
+                    <td><button onclick="editRow(this)">Edit</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -182,6 +190,45 @@
             window.print();
             document.body.innerHTML = originalContents;
         }
+
+        function editRow(button) {
+    var row = button.parentNode.parentNode;
+    var cells = row.getElementsByTagName("td");
+
+    // Iterate through each cell and replace the content with an input field
+    for (var i = 0; i < cells.length - 1; i++) { // Exclude the last cell with the edit button
+        var cell = cells[i];
+        var oldValue = cell.textContent.trim();
+        var input = document.createElement("input");
+        input.type = "text";
+        input.value = oldValue;
+        cell.textContent = ''; // Clear existing content
+        cell.appendChild(input);
+    }
+
+    // Replace the edit button with a save button
+    var editButton = row.querySelector('button');
+    editButton.textContent = 'Save';
+    editButton.onclick = function() { saveRow(this); }; // Change the function to saveRow
+}
+
+function saveRow(button) {
+    var row = button.parentNode.parentNode;
+    var cells = row.getElementsByTagName("td");
+
+    // Iterate through each cell and get the value from the input field
+    for (var i = 0; i < cells.length - 1; i++) { // Exclude the last cell with the edit button
+        var cell = cells[i];
+        var input = cell.querySelector('input');
+        var newValue = input.value;
+        cell.textContent = newValue;
+    }
+
+    // Replace the save button with an edit button
+    button.textContent = 'Edit';
+    button.onclick = function() { editRow(this); }; // Change the function to editRow
+}
+
     </script>
 </body>
 </html>
