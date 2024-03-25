@@ -35,6 +35,7 @@ def add_item():
         weight = form.weight.data
         stock = form.stock.data
         value_per_item = form.value_per_item.data
+        type = form.type.data
         
         try:
             # Generate a random barcode number (replace this with your barcode generation logic)
@@ -42,7 +43,7 @@ def add_item():
             
             # Create a new Inventory object with the generated barcode
             new_item = Inventory(item_name=item_name, material=material, weight=weight, stock=stock, 
-                                 value_per_item=value_per_item, barcode=barcode)
+                                 value_per_item=value_per_item, barcode=barcode,type=type)
             
             db.session.add(new_item)
             db.session.commit()
