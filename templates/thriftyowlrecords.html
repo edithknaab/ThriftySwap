@@ -36,12 +36,19 @@
     <h1>Thrifty Owl Inventory Report</h1>
     <hr>
     <div>
+        <label for="report-type">Select Report Type:</label>
+        <select id="report-type" onchange="toggleReport()">
+            <option value="intake">Intake Report</option>
+            <option value="outtake">Outtake Report</option>
+        </select>
+    </div>
+    <div id="intake-report" style="display: block;">
         <h2>Intake Report</h2>
         <label for="intake-date-filter">Filter by Date:</label>
-        <input type="date" id="intake-date-filter">
+        <label for="intake-search-filter">Search by Item Name or Donor Info:</label>
+        <input type="text" id="intake-search-filter" onkeyup="filterIntakeTable()" placeholder="Search...">
         <button onclick="filterIntakeTable()">Filter</button>
         <button onclick="printIntakeTable()">Print</button>
-        <input type="text" id="intake-donor-search" onkeyup="searchDonorIntake()" placeholder="Search by Donor Name...">
         <table id="intake-table">
             <thead>
                 <tr>
@@ -81,12 +88,13 @@
             </tbody>
         </table>
     </div>    
-    
-    <div>
+    <div id="outtake-report" style="display: none;">
         <h2>Outtake History</h2>
         <label for="outtake-date-filter">Filter by Date:</label>
         <input type="date" id="outtake-date-filter">
         <button onclick="filterOuttakeTable()">Filter</button>
+        <label for="outtake-search-filter">Search by Item Name or Recepient Info:</label>
+        <input type="text" id="outtake-search-filter" onkeyup="filterOuttakeTable()" placeholder="Search...">
         <button onclick="printOuttakeTable()">Print</button>
         <table id="outtake-table">
             <thead>
@@ -95,7 +103,7 @@
                     <th>Quantity</th>
                     <th>Weight</th>
                     <th>Total Weight</th> 
-                    <th>Donor Information</th>
+                    <th>Recepient Information</th>
                     <th>Value Per Item</th>
                     <th>Timestamp</th>
                     <th>Total Value</th>
@@ -127,18 +135,29 @@
         </table>
     </div>
     <script>
-        
+        function toggleReport() {
+            var reportType = document.getElementById("report-type").value;
+            if (reportType === "intake") {
+                document.getElementById("intake-report").style.display = "block";
+                document.getElementById("outtake-report").style.display = "none";
+            } else if (reportType === "outtake") {
+                document.getElementById("intake-report").style.display = "none";
+                document.getElementById("outtake-report").style.display = "block";
+            }
+        }
         function filterIntakeTable() {
             var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("intake-date-filter");
-            filter = input.value;
+            input = document.getElementById("intake-search-filter");
+            filter = input.value.toUpperCase();
             table = document.getElementById("intake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[4]; 
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.indexOf(filter) > -1) {
+                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
+                var donor_info_td = tr[i].getElementsByTagName("td")[6]; // Index 6 for donor info
+                if (item_name_td || donor_info_td) {
+                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
+                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
+                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
@@ -146,7 +165,29 @@
                 }
             }
         }
-
+        
+        function filterOuttakeTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("outtake-search-filter");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("outtake-table");
+            tr = table.getElementsByTagName("tr");
+            for (i = 0; i < tr.length; i++) {
+                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
+                var donor_info_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for donor info
+                if (item_name_td || donor_info_td) {
+                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
+                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
+                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }   
+        
+        
         function printIntakeTable() {
             var printContents = document.getElementById("intake-table").outerHTML;
             var originalContents = document.body.innerHTML;
@@ -155,25 +196,6 @@
             document.body.innerHTML = originalContents;
         }
 
-        
-        function filterOuttakeTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("outtake-date-filter");
-            filter = input.value;
-            table = document.getElementById("outtake-table");
-            tr = table.getElementsByTagName("tr");
-            for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[6]; 
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
-            }
-        }
 
         function printOuttakeTable() {
             var printContents = document.getElementById("outtake-table").outerHTML;
