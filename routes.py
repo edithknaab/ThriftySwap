@@ -518,7 +518,7 @@ def create_intake_transaction():
 @app.route('/swap_shop_dashboard')
 @login_required
 def swap_shop_dashboard():
-    # Logic to retrieve items for the swap shop dashboard
+    # Logic to retrieve items and donor info for the swap shop dashboard
     items = SwapShopInventory.query.all()
     donor_info = SwapShopIntakeTransaction.query.all()
     return render_template('dashboard_swap_shop.html', items=items, donor_info=donor_info)
@@ -531,8 +531,10 @@ def add_item_swap_shop():
         item_name = form.item_name.data
         material = form.material.data
         weight = form.weight.data
+        type = form.type.data
         stock = form.stock.data
         value_per_item = form.value_per_item.data
+
         
         try:
             # Generate a random barcode number (replace this with your barcode generation logic)
@@ -540,7 +542,7 @@ def add_item_swap_shop():
             
             # Create a new Swap Shop Inventory object with the submitted data
             new_item = SwapShopInventory(item_name=item_name, material=material, weight=weight, 
-                                         stock=stock, value_per_item=value_per_item, barcode=barcode)
+                                         stock=stock, value_per_item=value_per_item, barcode=barcode,type=type)
             
             db.session.add(new_item)
             db.session.commit()
@@ -562,6 +564,7 @@ def get_swap_shop_inventory():
         'material': item.material,
         'weight': item.weight,
         'stock': item.stock,
+        'type': item.type,
         'value_per_item': item.value_per_item,
         'barcode': item.barcode,
         # Add any other fields you need to serialize
