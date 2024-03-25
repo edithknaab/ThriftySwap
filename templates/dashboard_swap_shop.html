@@ -156,6 +156,7 @@ function fetchInventory() {
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
+                    <td>${item.type ? item.type : 'N/A'}</td>
                     <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
                     <td>${item.value_per_item}</td>
                     <td>
@@ -165,6 +166,7 @@ function fetchInventory() {
                         <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
                     </td>
                 `;
+
                 inventoryBody.appendChild(row);
             });
         })

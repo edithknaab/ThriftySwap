@@ -6,21 +6,22 @@
 <h2>Thrifty Owl Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
-      <span class="close-container"><span class="close">&times;</span></span>
-      <h2>Item Details</h2>
-      <p id="itemName"></p>
-      <p id="itemMaterial"></p>
-      <p id="itemWeight"></p>
-      <p id="itemStock"></p>
-      <p id="itemValue"></p>
+        <span class="close-container"><span class="close">&times;</span></span>
+        <h2>Item Details</h2>
+        <p id="itemName"></p>
+        <p id="itemMaterial"></p>
+        <p id="itemWeight"></p>
+        <p id="itemStock"></p>
+        <p id="itemValue"></p>
     </div>
 </div>
+
 <!-- Inventory window -->
 <div class="inventory-window">
     <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
-<div>
-    <input type="text" id="searchInput" placeholder="Search by Item Name">
-</div>
+    <div>
+        <input type="text" id="searchInput" placeholder="Search by Item Name or Type">
+    </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
@@ -28,6 +29,7 @@
                     <th>Item Name</th>
                     <th>Material</th>
                     <th>Weight (kg)</th>
+                    <th>Type</th>
                     <th>Stock</th>
                     <th>Value Per Item</th>
                     <th>Action</th>
@@ -38,53 +40,13 @@
         </table>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
-    
 document.addEventListener('DOMContentLoaded', function() {
     fetchInventory();
     scanBarcode();
-    // Create a new div for the buttons
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'button-container';
-
-    // Create the Update button
-    const updateButton = document.createElement('button');
-    updateButton.onclick = function() { updateQuantity(itemId); };
-    updateButton.className = 'btn btn-primary modal-button';
-    updateButton.textContent = 'Update';
-
-    // Create the Release button
-    const releaseButton = document.createElement('button');
-    releaseButton.onclick = function() { releaseItem(itemId, data.item_name); };
-    releaseButton.className = 'btn btn-primary modal-button';
-    releaseButton.textContent = 'Release';
-
-    // Add the buttons to the buttonContainer
-    buttonContainer.appendChild(updateButton);
-    buttonContainer.appendChild(releaseButton);
-
-    // Add the buttonContainer to the modalContent
-    modalContent.appendChild(buttonContainer);
-
-    // Set focus on the barcode input field
-    document.getElementById('scannedBarcode').focus();
-
-    // Get the modal and the close button
-    var modal = document.getElementById('itemDetailsModal');
-    var closeButton = document.querySelector('.close');
-
-    // When the user clicks on the close button, close the modal
-    closeButton.onclick = function() {
-      modal.style.display = "none";
-    }
-
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    }
+   
 });
 
 function showItemDetails(itemId) {
@@ -144,6 +106,7 @@ function fetchInventory() {
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
+                    <td>${item.type}</td>
                     <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
                     <td>${item.value_per_item}</td>
                     <td>
@@ -315,10 +278,11 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        if (itemName.includes(searchTerm)) {
-            row.style.display = ''; // Show the row if item name matches search term
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
+        if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
+            row.style.display = ''; // Show the row if item name or type matches search term
         } else {
-            row.style.display = 'none'; // Hide the row if item name doesn't match search term
+            row.style.display = 'none'; // Hide the row if item name or type doesn't match search term
         }
     });
 });
