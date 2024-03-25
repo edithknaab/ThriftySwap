@@ -58,7 +58,7 @@
                 {% for item, intake_data in intake_info.items() %}
                 <tr>
                     {% for intake_transaction in intake_data %}
-                    
+                    <!-- Separate intake transaction information into different columns -->
                     <td>{{ intake_transaction.inventory.item_name }}</td>
                     <td>{{ intake_transaction.inventory.material }}</td>
                     <td>{{ intake_transaction.inventory.value_per_item }}</td>
@@ -74,13 +74,13 @@
                     </td>                                  
                     <td>{{ intake_transaction.quantity }}</td>
                     <td>{{ intake_transaction.donor_info }}</td>
-                    
+                    </tr><tr><!-- Create a new row for each intake transaction -->
                     {% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div> 
+    </div>    
     
     <div>
         <h2>Outtake History</h2>
