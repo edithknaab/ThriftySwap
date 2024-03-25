@@ -29,6 +29,9 @@
     <hr>
     <div>
         <h2>Intake Report</h2>
+        <label for="intake-date-filter">Filter by Date:</label>
+        <input type="date" id="intake-date-filter">
+        <button onclick="filterIntakeTable()">Filter</button>
         <label for="intake-search-filter">Search by Item Name or Donor Info:</label>
         <input type="text" id="intake-search-filter" onkeyup="filterIntakeTable()">
         <button onclick="printIntakeTable()">Print</button>
@@ -49,7 +52,15 @@
                 <tr>
                     <td>{{ intake_transaction.swap_shop_inventory.item_name }}</td>
                     <td>{{ intake_transaction.quantity }}</td>
-                    <td>{{ intake_transaction.timestamp }}</td>
+                    <td>
+                        <script>
+                            var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
+                            var timestamp = new Date(timestampString);
+                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
+                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
+                            document.write(easternDate + " " + easternTime);
+                        </script>
+                    </td>           
                     <td>{{ intake_transaction.donor_info }}</td>
                     <td>{{ intake_transaction.swap_shop_inventory.value_per_item }}</td>
                     <td>{{ intake_transaction.swap_shop_inventory.value_per_item * intake_transaction.quantity }}</td>
@@ -63,6 +74,9 @@
 
     <div>
         <h2>Outtake History</h2>
+        <label for="outtake-date-filter">Filter by Date:</label>
+        <input type="date" id="outtake-date-filter">
+        <button onclick="filterOuttakeTable()">Filter</button> 
         <label for="outtake-search-filter">Search by Item Name or Donor Info:</label>
         <input type="text" id="outtake-search-filter" onkeyup="filterOuttakeTable()">
         <button onclick="printOuttakeTable()">Print</button>
@@ -82,7 +96,15 @@
                 <tr>
                     <td>{{ outtake_transaction.swap_shop_inventory.item_name }}</td> 
                     <td>{{ outtake_transaction.quantity }}</td>
-                    <td>{{ outtake_transaction.timestamp }}</td>
+                    <td>
+                        <script>
+                            var timestampString = "{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
+                            var timestamp = new Date(timestampString);
+                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
+                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
+                            document.write(easternDate + " " + easternTime);
+                        </script>
+                    </td>           
                     <td>{{ outtake_transaction.donor_info }}</td>
                     <td>{{ outtake_transaction.swap_shop_inventory.weight }}</td>
                     <td>{{ outtake_transaction.swap_shop_inventory.value_per_item * outtake_transaction.quantity }}</td>                 
@@ -114,49 +136,43 @@
         }
         document.getElementById("outtake-total").innerText = "Total Value: " + outtakeTotal.toFixed(2);
 
-        
         function filterIntakeTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("intake-search-filter");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("intake-table");
-            tr = table.getElementsByTagName("tr");
-            for (i = 0; i < tr.length; i++) {
-                var item_name_td = tr[i].getElementsByTagName("td")[0]; 
-                var donor_info_td = tr[i].getElementsByTagName("td")[3]; 
-                if (item_name_td || donor_info_td) {
-                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
-                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
-                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("intake-date-filter");
+        filter = input.value;
+        table = document.getElementById("intake-table");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[2]; // Adjusted index for timestamp column
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.includes(filter)) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
                 }
             }
         }
+    }
 
-        function filterOuttakeTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("outtake-search-filter");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("outtake-table");
-            tr = table.getElementsByTagName("tr");
-            for (i = 0; i < tr.length; i++) {
-                var item_name_td = tr[i].getElementsByTagName("td")[0]; 
-                var donor_info_td = tr[i].getElementsByTagName("td")[3]; 
-                if (item_name_td || donor_info_td) {
-                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
-                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
-                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
+    function filterOuttakeTable() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("outtake-date-filter");
+        filter = input.value;
+        table = document.getElementById("outtake-table");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[2]; // Adjusted index for timestamp column
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.includes(filter)) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
                 }
             }
         }
-
+    }
         function printIntakeTable() {
             var printContents = document.getElementById("intake-table").outerHTML;
             var originalContents = document.body.innerHTML;
