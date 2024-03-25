@@ -83,5 +83,6 @@ class SSItemForm(FlaskForm):
     weight = FloatField('Weight (kg)', validators=[InputRequired(), NumberRange(min=0)])
     stock = IntegerField('Stock', validators=[InputRequired(), NumberRange(min=0)])
     value_per_item = FloatField('Value Per Item', validators=[InputRequired(), NumberRange(min=0)])
+    type = SelectField('Type', choices=[('School Supplies'), ('Bedroom Items'), ('Kitchen'), ('Decor'), ('Bathroom Items'), ('Electronics'), ('Miscellaneous')], default='Kitchen')
     barcode = StringField('Barcode', validators=[Length(max=50)])
     submit = SubmitField('Add Item')

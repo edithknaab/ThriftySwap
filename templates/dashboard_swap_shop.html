@@ -15,7 +15,7 @@
 <div class="inventory-window">
     <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
 <div>
-    <input type="text" id="searchInput" placeholder="Search by Item Name">
+    <input type="text" id="searchInput" placeholder="Search by Item Name and Category">
 </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -25,6 +25,7 @@
                     <th>Material</th>
                     <th>Weight (kg)</th>
                     <th>Stock</th>
+                    <th> Type </th>
                     <th>Value Per Item</th>
                     <th>Action</th>
                 </tr>
@@ -36,6 +37,7 @@
                     <td>{{ item.material }}</td>
                     <td>{{ item.weight }}</td>
                     <td><input type="number" id="quantity_{{ item.id }}" value="{{ item.stock }}" class="form-control" readonly></td>
+                    <td>{{ item.type }}</td>
                     <td>{{ item.value_per_item }}</td>
                     <td>
                         <button onclick="releaseItem('{{ item.id }}', '{{ item.item_name }}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
@@ -156,8 +158,8 @@ function fetchInventory() {
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
-                    <td>${item.type ? item.type : 'N/A'}</td>
                     <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
+                    <td>${item.type}</td>
                     <td>${item.value_per_item}</td>
                     <td>
                         <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
@@ -166,7 +168,6 @@ function fetchInventory() {
                         <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
                     </td>
                 `;
-
                 inventoryBody.appendChild(row);
             });
         })
@@ -311,12 +312,15 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        if (itemName.includes(searchTerm)) {
+        const itemType = row.querySelector('td:nth-child(5)').textContent.trim().toLowerCase(); // Adjust the nth-child index according to your table structure
+        
+        if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
             row.style.display = ''; 
         } else {
             row.style.display = 'none'; 
         }
     });
 });
+
 </script>
 {% endblock %}
