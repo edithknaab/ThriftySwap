@@ -30,6 +30,7 @@
             text-align: right;
         }
     </style>
+      
 </head>
 <body>
     <h1>Thrifty Owl Inventory Report</h1>
@@ -40,6 +41,7 @@
         <input type="date" id="intake-date-filter">
         <button onclick="filterIntakeTable()">Filter</button>
         <button onclick="printIntakeTable()">Print</button>
+        <input type="text" id="intake-donor-search" onkeyup="searchDonorIntake()" placeholder="Search by Donor Name...">
         <table id="intake-table">
             <thead>
                 <tr>
@@ -65,11 +67,11 @@
                         <script>
                             var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
                             var timestamp = new Date(timestampString);
-                            var options = { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", hour12: true };
-                            var easternTime = timestamp.toLocaleString("en-US", options);
-                            document.write(easternTime);
+                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
+                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
+                            document.write(easternDate + " " + easternTime);
                         </script>
-                    </td>
+                    </td>                                  
                     <td>{{ intake_transaction.quantity }}</td>
                     <td>{{ intake_transaction.donor_info }}</td>
                     
@@ -78,8 +80,8 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>      
-
+    </div> 
+    
     <div>
         <h2>Outtake History</h2>
         <label for="outtake-date-filter">Filter by Date:</label>
@@ -123,8 +125,7 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>  
-
+    </div>
     <script>
         
         function filterIntakeTable() {
