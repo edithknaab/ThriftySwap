@@ -30,7 +30,6 @@
             text-align: right;
         }
     </style>
-      
 </head>
 <body>
     <h1>Thrifty Owl Inventory Report</h1>
@@ -44,9 +43,10 @@
     </div>
     <div id="intake-report" style="display: block;">
         <h2>Intake Report</h2>
-        <label for="intake-date-filter">Filter by Date:</label>
         <label for="intake-search-filter">Search by Item Name or Donor Info:</label>
-        <input type="text" id="intake-search-filter" onkeyup="filterIntakeTable()" placeholder="Search...">
+        <input type="text" id="intake-search-filter" onkeyup="searchIntakeTable()" placeholder="Search...">
+        <label for="intake-date-filter">Filter by Date:</label>
+        <input type="date" id="intake-date-filter" onchange="filterIntakeByDate()">
         <button onclick="filterIntakeTable()">Filter</button>
         <button onclick="printIntakeTable()">Print</button>
         <table id="intake-table">
@@ -90,11 +90,11 @@
     </div>    
     <div id="outtake-report" style="display: none;">
         <h2>Outtake History</h2>
+        <label for="outtake-search-filter">Search by Item Name or Recipient Info:</label>
+        <input type="text" id="outtake-search-filter" onkeyup="searchOuttakeTable()" placeholder="Search...">
         <label for="outtake-date-filter">Filter by Date:</label>
-        <input type="date" id="outtake-date-filter">
+        <input type="date" id="outtake-date-filter" onchange="filterOuttakeByDate()">
         <button onclick="filterOuttakeTable()">Filter</button>
-        <label for="outtake-search-filter">Search by Item Name or Recepient Info:</label>
-        <input type="text" id="outtake-search-filter" onkeyup="filterOuttakeTable()" placeholder="Search...">
         <button onclick="printOuttakeTable()">Print</button>
         <table id="outtake-table">
             <thead>
@@ -103,7 +103,7 @@
                     <th>Quantity</th>
                     <th>Weight</th>
                     <th>Total Weight</th> 
-                    <th>Recepient Information</th>
+                    <th>Recipient Information</th>
                     <th>Value Per Item</th>
                     <th>Timestamp</th>
                     <th>Total Value</th>
@@ -122,12 +122,11 @@
                         <script>
                             var timestampString = "{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
                             var timestamp = new Date(timestampString);
-                            var options = { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric", hour12: true };
-                            var easternTime = timestamp.toLocaleString("en-US", options);
+                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
                             var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
                             document.write(easternDate + " " + easternTime);
                         </script>
-                    </td>                    
+                    </td>                         
                     <td>{{ outtake_transaction.inventory.value_per_item * outtake_transaction.quantity }}</td> 
                 </tr>
                 {% endfor %}
@@ -140,24 +139,68 @@
             if (reportType === "intake") {
                 document.getElementById("intake-report").style.display = "block";
                 document.getElementById("outtake-report").style.display = "none";
-            } else if (reportType === "outtake") {
+            }
+            else if (reportType === "outtake") {
                 document.getElementById("intake-report").style.display = "none";
                 document.getElementById("outtake-report").style.display = "block";
             }
         }
-        function filterIntakeTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("intake-search-filter");
-            filter = input.value.toUpperCase();
+
+        // Function to search intake table
+// Function to search intake table
+function searchIntakeTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("intake-search-filter");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("intake-table");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+        var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
+        var donorInfo_td = tr[i].getElementsByTagName("td")[6]; // Index 6 for donor info
+        if (itemName_td || donorInfo_td) {
+            var itemName_text = itemName_td.textContent || itemName_td.innerText;
+            var donorInfo_text = donorInfo_td.textContent || donorInfo_td.innerText;
+            if (itemName_text.toUpperCase().indexOf(filter) > -1 || donorInfo_text.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+
+function searchOuttakeTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("outtake-search-filter");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("outtake-table");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+        var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
+        var recipientInfo_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for recipient info
+        if (itemName_td || recipientInfo_td) {
+            var itemName_text = itemName_td.textContent || itemName_td.innerText;
+            var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
+            if (itemName_text.toUpperCase().indexOf(filter) > -1 || recipientInfo_text.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+        // Filter intake table by date
+        function filterIntakeByDate() {
+            var input, filter, table, tr, td, i;
+            input = document.getElementById("intake-date-filter");
+            filter = input.value;
             table = document.getElementById("intake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
-                var donor_info_td = tr[i].getElementsByTagName("td")[6]; // Index 6 for donor info
-                if (item_name_td || donor_info_td) {
-                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
-                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
-                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
+                var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for timestamp
+                if (timestamp_td) {
+                    var timestamp_text = timestamp_td.textContent || timestamp_td.innerText;
+                    if (timestamp_text.includes(filter)) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
@@ -165,40 +208,37 @@
                 }
             }
         }
-        
-        function filterOuttakeTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("outtake-search-filter");
-            filter = input.value.toUpperCase();
+
+        // Filter outtake table by date
+        function filterOuttakeByDate() {
+            var input, filter, table, tr, td, i;
+            input = document.getElementById("outtake-date-filter");
+            filter = input.value;
             table = document.getElementById("outtake-table");
             tr = table.getElementsByTagName("tr");
             for (i = 0; i < tr.length; i++) {
-                var item_name_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
-                var donor_info_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for donor info
-                if (item_name_td || donor_info_td) {
-                    var item_name_text = item_name_td.textContent || item_name_td.innerText;
-                    var donor_info_text = donor_info_td.textContent || donor_info_td.innerText;
-                    if (item_name_text.toUpperCase().indexOf(filter) > -1 || donor_info_text.toUpperCase().indexOf(filter) > -1) {
+                var timestamp_td = tr[i].getElementsByTagName("td")[6]; // Index 6 for timestamp
+                if (timestamp_td) {
+                    var timestamp_text = timestamp_td.textContent || timestamp_td.innerText;
+                    if (timestamp_text.includes(filter)) {
                         tr[i].style.display = "";
                     } else {
                         tr[i].style.display = "none";
                     }
                 }
             }
-        }   
-        
-        
+        }
+
         function printIntakeTable() {
-            var printContents = document.getElementById("intake-table").outerHTML;
+            var printContents = document.getElementById("intake-report").innerHTML;
             var originalContents = document.body.innerHTML;
             document.body.innerHTML = printContents;
             window.print();
             document.body.innerHTML = originalContents;
         }
 
-
         function printOuttakeTable() {
-            var printContents = document.getElementById("outtake-table").outerHTML;
+            var printContents = document.getElementById("outtake-report").innerHTML;
             var originalContents = document.body.innerHTML;
             document.body.innerHTML = printContents;
             window.print();
@@ -208,3 +248,4 @@
 </body>
 </html>
 {% endblock %}
+
