@@ -64,12 +64,26 @@ def delete_item():
     inventory_item = Inventory.query.get(item_id)
 
     if inventory_item:
-        db.session.delete(inventory_item)
+        inventory_item.is_deleted = True  # mark as deleted
         db.session.commit()
         return jsonify({'success': True, 'message': 'Item deleted successfully'})
     else:
         return jsonify({'success': False, 'message': 'Item not found'})
-    
+
+@app.route('/ss_delete_item', methods=['POST'])
+def ss_delete_item():
+    request_data = request.get_json()
+    item_id = request_data.get('id')
+
+    swapshop_item = SwapShopInventory.query.get(item_id)
+
+    if swapshop_item:
+        swapshop_item.is_deleted = True  # mark as deleted
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Item deleted successfully'})
+    else:
+        return jsonify({'success': False, 'message': 'Item not found'})
+
 @bp.route('/scan_barcode', methods=['POST'])
 @login_required
 def scan_barcode():
@@ -309,7 +323,7 @@ def update_quantity():
 
 @app.route('/get_inventory', methods=['GET'])
 def get_inventory():
-    inventory_items = Inventory.query.all()
+    inventory_items = Inventory.query.filter(Inventory.is_deleted == False).all()
     serialized_items = [{
         'id': item.id,
         'item_name': item.item_name,
@@ -557,7 +571,7 @@ def add_item_swap_shop():
 
 @app.route('/get_swap_shop_inventory', methods=['GET'])
 def get_swap_shop_inventory():
-    inventory_items = SwapShopInventory.query.all()
+    inventory_items = SwapShopInventory.query.filter(SwapShopInventory.is_deleted == False).all()
     serialized_items = [{
         'id': item.id,
         'item_name': item.item_name,
@@ -565,9 +579,8 @@ def get_swap_shop_inventory():
         'weight': item.weight,
         'stock': item.stock,
         'type': item.type,
-        'value_per_item': item.value_per_item,
+        'value_per_item': str(item.value_per_item),
         'barcode': item.barcode,
-        # Add any other fields you need to serialize
     } for item in inventory_items]
 
     return jsonify({'inventory': serialized_items})

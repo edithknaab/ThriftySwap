@@ -102,6 +102,7 @@ function fetchInventory() {
             inventoryBody.innerHTML = '';
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
+                row.id = `item_${item.id}`;  // Assign an id to the row
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -199,6 +200,7 @@ function deleteItem(itemId) {
             if (data.success) {
                 alert(data.message);
                 document.getElementById(`item_${itemId}`).remove();
+                fetchInventory();
             } else {
                 alert(data.message);
             }

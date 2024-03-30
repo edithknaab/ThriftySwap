@@ -154,6 +154,7 @@ function fetchInventory() {
             inventoryBody.innerHTML = '';
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
+                row.id = `item_${item.id}`;  // Assign an id to the row
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -173,6 +174,7 @@ function fetchInventory() {
         })
         .catch(error => console.error('Error:', error));
 }
+
 function printBarcode(barcode) {
     if (barcode !== null) {
         const barcodeImage = new Image();
@@ -225,6 +227,27 @@ function releaseItem(itemId, itemName) {
     } else {
         alert("Please enter a valid quantity and donor information.");
     }
+}
+
+function deleteItem(itemId) {
+    fetch('/ss_delete_item', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: itemId }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                document.getElementById(`item_${itemId}`).remove();
+                fetchInventory();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 function updateQuantity(itemId) {
