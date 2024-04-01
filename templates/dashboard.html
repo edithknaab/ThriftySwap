@@ -21,11 +21,11 @@
     <!-- Input fields container -->
     <div>
         <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Type'...">
-        <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
+        <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
     </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-sm table-hover">
             <thead>
                 <tr>
                     <th>Item Name</th>
@@ -55,46 +55,36 @@ function showItemDetails(itemId) {
     fetch(`/get_item_details/${itemId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('itemName').innerText = "Item Name: " + data.item_name;
-            document.getElementById('itemMaterial').innerText = "Material: " + data.material;
-            document.getElementById('itemWeight').innerText = "Weight: " + data.weight;
-            document.getElementById('itemStock').innerText = "Stock: " + data.stock;
-            document.getElementById('itemValue').innerText = "Value Per Item: " + data.value_per_item;
-
-            // Add Update and Release buttons to the modal
-            const modalContent = document.querySelector('.modal-content');
-            
-            // Clear previous buttons
-            const oldButtons = modalContent.querySelectorAll('button');
-            oldButtons.forEach(button => button.remove());
-
-            modalContent.innerHTML += `
-            <div class="button-container">
-                <button onclick="updateQuantity(${itemId})" class="btn btn-primary modal-button">Update</button>
-                <button onclick="releaseItem(${itemId}, '${data.item_name}')" class="btn btn-primary modal-button">Release</button>
-            </div>
+            // Prepare the HTML content for SweetAlert
+            const itemDetailsHtml = `
+                <p><strong>Item Name:</strong> ${data.item_name}</p>
+                <p><strong>Material:</strong> ${data.material}</p>
+                <p><strong>Weight:</strong> ${data.weight} lb</p>
+                <p><strong>Stock:</strong> ${data.stock}</p>
+                <p><strong>Value Per Item:</strong> $${data.value_per_item}</p>
             `;
 
-            // Show the modal
-            document.getElementById('itemDetailsModal').style.display = "block";
-
-            // Get the modal and the close button
-            var modal = document.getElementById('itemDetailsModal');
-            var closeButton = document.querySelector('.close');
-
-            // When the user clicks on the close button, close the modal
-            closeButton.onclick = function() {
-              modal.style.display = "none";
-            }
-
-            // When the user clicks anywhere outside of the modal, close it
-            window.onclick = function(event) {
-              if (event.target == modal) {
-                modal.style.display = "none";
-              }
-            }
+            // Display the details using SweetAlert without a "Close" button
+            Swal.fire({
+                title: 'Item Details',
+                html: itemDetailsHtml,
+                showCloseButton: true, // Allows closing by clicking the "X" button
+                focusConfirm: false,
+                showConfirmButton: false, // Removes the "Close" button
+                footer: '<button class="btn btn-primary" onclick="updateQuantity(' + itemId + ')" type="button" style="margin-right: 8px;">Add</button>' +
+                        '<button class="btn btn-primary" onclick="releaseItem(' + itemId + ',\'' + data.item_name + '\')" type="button">Release</button>',
+                showCancelButton: false,
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                },
+                buttonsStyling: false,
+                allowOutsideClick: true, // Allows closing by clicking outside the modal
+                allowEscapeKey: true, // Allows closing by pressing the ESC key
+            });
         });
 }
+
+
 
 function fetchInventory() {
     fetch(`/get_inventory`)
@@ -110,7 +100,7 @@ function fetchInventory() {
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
                     <td>${item.type}</td>
-                    <td>${item.stock}</td>
+                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
                     <td>${item.value_per_item}</td>
                     <td>
                         <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>

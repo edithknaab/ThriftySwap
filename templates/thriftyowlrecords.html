@@ -52,7 +52,8 @@
         <label for="intake-date-filter">Filter by Date:</label>
         <input type="date" id="intake-date-filter" onchange="filterIntakeByDate()">
         <button onclick="printIntakeTable()">Print</button>
-        <table id="intake-table">
+        <div class="table-responsive">
+            <table id="intake-table" class="table table-bordered table-striped table-sm">
             <thead>
                 <tr>
                     <th>Item</th>
