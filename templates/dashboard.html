@@ -3,7 +3,7 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2>Thrifty Owl Inventory</h2>
+<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Thrifty Owl Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
         <span class="close-container"><span class="close">&times;</span></span>
@@ -18,10 +18,12 @@
 
 <!-- Inventory window -->
 <div class="inventory-window">
-    <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
+    <!-- Input fields container -->
     <div>
-        <input type="text" id="searchInput" placeholder="Search by Item Name or Type">
+        <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Type'...">
+        <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
     </div>
+
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
@@ -108,13 +110,13 @@ function fetchInventory() {
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
                     <td>${item.type}</td>
-                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
+                    <td>${item.stock}</td>
                     <td>${item.value_per_item}</td>
                     <td>
-                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
-                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Update </button>
-                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="bi bi-printer"></i> Print Barcode</button>
-                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 inventoryBody.appendChild(row);
@@ -124,41 +126,96 @@ function fetchInventory() {
 }
 
 function updateQuantity(itemId) {
-    const quantityInput = document.getElementById(`quantity_${itemId}`);
-    const quantityToAdd = parseInt(prompt("Enter the quantity to add:"));
-
-    if (!isNaN(quantityToAdd) && quantityToAdd > 0) {
-        const donorInfo = prompt("Enter donor information:");
-        if (donorInfo !== null && donorInfo.trim() !== '') {
-            const newQuantity = parseInt(quantityInput.value) + quantityToAdd;
-
-            fetch('/update_quantity', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    quantityInput.value = newQuantity; // Update the input field in the main inventory list
-                    document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
-
-                    alert(data.message);
-
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        } else {
-            alert("Please enter donor information.");
+    // Start with quantity input
+    Swal.fire({
+        title: 'Enter the quantity to add:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        // Check if the dialog was dismissed (e.g., by pressing "Cancel")
+        if (quantityResult.dismiss) {
+            // If dismissed, just return and do nothing
+            return;
         }
-    } else {
-        alert("Please enter a valid quantity to add.");
-    }
+        
+        if (quantityResult.isConfirmed && quantityResult.value) {
+            // Then ask for donor information
+            Swal.fire({
+                title: 'Enter donor information:',
+                input: 'text',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                confirmButtonColor: '#001489',
+                showLoaderOnConfirm: true,
+            }).then((donorResult) => {
+                // Check if the dialog was dismissed
+                if (donorResult.dismiss) {
+                    // If dismissed, just return and do nothing
+                    return;
+                }
+
+                if (donorResult.isConfirmed && donorResult.value.trim() !== '') {
+                    // Proceed with the update quantity logic
+                    const quantityToAdd = parseInt(quantityResult.value);
+                    const newQuantity = parseInt(document.getElementById(`quantity_${itemId}`).value) + quantityToAdd;
+
+                    fetch('/update_quantity', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorResult.value }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: data.message,
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: data.message,
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong!',
+                        });
+                    });
+                }
+                // If user does not enter donor information and presses "Submit", show a reminder
+                else if (donorResult.isConfirmed) {
+                    Swal.fire('Please enter donor information or select "Unknown".');
+                }
+            });
+        }
+        // If user enters invalid quantity and presses "Submit", show a reminder
+        else if (quantityResult.isConfirmed) {
+            Swal.fire('Please enter a valid quantity to add.');
+        }
+    });
 }
+
+
 
 
 function printBarcode(barcode) {
@@ -188,55 +245,124 @@ function confirmDelete(itemId) {
 }
 
 function deleteItem(itemId) {
-    fetch('/delete_item', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: itemId }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                document.getElementById(`item_${itemId}`).remove();
-                fetchInventory();
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function releaseItem(itemId, itemName) {
-    var quantity = prompt("Enter the quantity to release:");
-    var donorInfo = prompt("Enter donor information:");
-    if (quantity !== null && !isNaN(quantity) && quantity.trim() !== '' && donorInfo !== null && donorInfo.trim() !== '') {
-        var quantityNum = parseInt(quantity);
-        fetch('/release_item', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ item_name: itemName, item_id: itemId, quantity: quantityNum, donor_info: donorInfo }),
-        })
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Delete Item'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/delete_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: itemId }),
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    var quantityInput = document.getElementById(`quantity_${itemId}`);
-                    var newQuantity = parseInt(quantityInput.value) - quantityNum;
-                    quantityInput.value = newQuantity; // Update the input field in the main inventory list
-                    document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
-                    alert(data.message);
+                    // On successful deletion, show a success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: data.message,
+                    });
+                    document.getElementById(`item_${itemId}`).remove(); // Remove the item row from the table
+                    fetchInventory(); // Optionally, refresh the inventory display if needed
                 } else {
-                    alert(data.message);
+                    // On failure, show an error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: data.message,
+                    });
                 }
             })
-            .catch(error => console.error('Error:', error));
-    } else {
-        alert("Please enter a valid quantity and donor information.");
-    }
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                });
+            });
+        }
+    });
 }
+
+
+function releaseItem(itemId, itemName) {
+    // Start with quantity input
+    Swal.fire({
+        title: 'Enter the quantity to release:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.isConfirmed && quantityResult.value) {
+            // Then ask for donor information
+            Swal.fire({
+                title: 'Enter recipient information:',
+                input: 'text',
+                showCancelButton: true,
+                confirmButtonText: 'Release',
+                showLoaderOnConfirm: true,
+            }).then((donorResult) => {
+                if (donorResult.isConfirmed && donorResult.value) {
+                    // Proceed with the release item logic
+                    const quantityNum = parseInt(quantityResult.value);
+                    fetch('/release_item', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ item_name: itemName, item_id: itemId, quantity: quantityNum, donor_info: donorResult.value }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let quantityInput = document.getElementById(`quantity_${itemId}`);
+                            let newQuantity = parseInt(quantityInput.value) - quantityNum;
+                            quantityInput.value = newQuantity; // Update the input field in the main inventory list
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Released!',
+                                text: data.message,
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: data.message,
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong!',
+                        });
+                    });
+                }
+            });
+        }
+    });
+}
+
 
 function scanBarcode() {
     let scannedBarcode = '';
