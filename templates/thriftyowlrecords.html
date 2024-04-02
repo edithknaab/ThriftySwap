@@ -67,7 +67,7 @@
                     <th>Timestamp</th>
                     <th>Amount Donated</th>
                     <th>Donor Information</th>
-                    <th> Total Value</th>
+                    <th>Total Value</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,6 +97,8 @@
         </table>
         <div id="intake-total" class="total-value"></div>
     </div>    
+    </div>
+
     <div id="outtake-report" style="display: none;">
         <h3 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Outtake Report</h3>
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -108,7 +110,7 @@
             </div>
         </div>        
         <div class="table-responsive">
-            <table class="table table-bordered table-sm" id="outtake-table">
+            <table class="table table-bordered table-hover table-sm" id="outtake-table">
             <thead>
                 <tr>
                     <th>Item</th>
@@ -146,8 +148,9 @@
         </table>
         <div id="outtake-total" class="total-value"></div>
     </div>
+    </div>
+    
     <script>
-        // Function to toggle report visibility
         function toggleReport() {
             var reportType = document.getElementById("report-type").value;
             if (reportType === "intake") {
@@ -206,22 +209,21 @@
         }
 
         // Function to calculate intake total
-function calculateIntakeTotal() {
-    var intakeTotal = 0;
-    var table = document.getElementById("intake-table");
-    var rows = table.getElementsByTagName("tr");
-    for (var i = 1; i < rows.length; i++) {
-        if (rows[i].style.display !== "none") { // Check if the row is visible
-            var rowCells = rows[i].getElementsByTagName("td");
-            var valuePerItem = parseFloat(rowCells[2].innerText); // Accessing the value per item column
-            var quantity = parseFloat(rowCells[5].innerText); // Accessing the quantity column
-            var totalValue = valuePerItem * quantity; // Calculate the total value
-            intakeTotal += totalValue;
+        function calculateIntakeTotal() {
+            var intakeTotal = 0;
+            var table = document.getElementById("intake-table");
+            var rows = table.getElementsByTagName("tr");
+            for (var i = 1; i < rows.length; i++) {
+                if (rows[i].style.display !== "none") { // Check if the row is visible
+                    var rowCells = rows[i].getElementsByTagName("td");
+                    var valuePerItem = parseFloat(rowCells[2].innerText); // Accessing the value per item column
+                    var quantity = parseFloat(rowCells[5].innerText); // Accessing the quantity column
+                    var totalValue = valuePerItem * quantity; // Calculate the total value
+                    intakeTotal += totalValue;
+                }
+            }
+            document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
         }
-    }
-    document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
-}
-
 
         // Function to calculate outtake total
         function calculateOuttakeTotal() {
@@ -236,7 +238,6 @@ function calculateIntakeTotal() {
             }
             document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
         }
-
 
         // Function to filter intake table by date
         function filterIntakeByDate() {
