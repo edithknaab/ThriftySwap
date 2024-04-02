@@ -1,6 +1,6 @@
 {% extends "ssbase.html" %}
 {% block content %}
-<h1>Swap Shop Inventory</h1>
+<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
       <span class="close-container"><span class="close">&times;</span></span>
@@ -13,19 +13,19 @@
     </div>
 </div>
 <div class="inventory-window">
-    <input type="text" id="scannedBarcode" placeholder="Scan Barcode..." onfocus="this.placeholder = ''" onblur="this.placeholder = 'Scan Barcode...'">
-<div>
-    <input type="text" id="searchInput" placeholder="Search by Item Name and Category">
-</div>
+    <div>
+        <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Type'...">
+        <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
+    </div>
     <div class="table-responsive">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-sm table-hover">
             <thead>
                 <tr>
                     <th>Item Name</th>
                     <th>Material</th>
                     <th>Weight (kg)</th>
+                    <th>Type</th>
                     <th>Stock</th>
-                    <th> Type </th>
                     <th>Value Per Item</th>
                     <th>Action</th>
                 </tr>
@@ -36,8 +36,8 @@
                     <td>{{ item.item_name }}</td>
                     <td>{{ item.material }}</td>
                     <td>{{ item.weight }}</td>
-                    <td><input type="number" id="quantity_{{ item.id }}" value="{{ item.stock }}" class="form-control" readonly></td>
                     <td>{{ item.type }}</td>
+                    <td><input type="number" id="quantity_{{ item.id }}" value="{{ item.stock }}" class="form-control" readonly></td>
                     <td>{{ item.value_per_item }}</td>
                     <td>
                         <button onclick="releaseItem('{{ item.id }}', '{{ item.item_name }}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
@@ -105,46 +105,36 @@ function showItemDetails(itemId) {
     fetch(`/get_ssitem_details/${itemId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('itemName').innerText = "Item Name: " + data.item_name;
-            document.getElementById('itemMaterial').innerText = "Material: " + data.material;
-            document.getElementById('itemWeight').innerText = "Weight: " + data.weight;
-            document.getElementById('itemStock').innerText = "Stock: " + data.stock;
-            document.getElementById('itemValue').innerText = "Value Per Item: " + data.value_per_item;
 
-            
-            const modalContent = document.querySelector('.modal-content');
-            
-            
-            const oldButtons = modalContent.querySelectorAll('button');
-            oldButtons.forEach(button => button.remove());
-
-            modalContent.innerHTML += `
-            <div class="button-container">
-                <button onclick="updateQuantity(${itemId})" class="btn btn-primary modal-button">Update</button>
-                <button onclick="releaseItem(${itemId}, '${data.item_name}')" class="btn btn-primary modal-button">Release</button>
-            </div>
+            const itemDetailsHtml = `
+                <p><strong>Item Name:</strong> ${data.item_name}</p>
+                <p><strong>Material:</strong> ${data.material}</p>
+                <p><strong>Weight:</strong> ${data.weight} lb</p>
+                <p><strong>Stock:</strong> ${data.stock}</p>
+                <p><strong>Value Per Item:</strong> $${data.value_per_item}</p>
             `;
+            Swal.fire({
+                title: 'Item Details',
+                html: itemDetailsHtml,
+                showCloseButton: true,
+                focusConfirm: false,
+                showConfirmButton: false,
+                footer: '<button class="btn btn-primary" onclick="updateQuantity(' + itemId + ')" type="button" style="margin-right: 8px;">Add</button>' +
+                        '<button class="btn btn-primary" onclick="releaseItem(' + itemId + ',\'' + data.item_name + '\')" type="button">Release</button>',
+                showCancelButton: false,
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                },
+                buttonsStyling: false,
+                allowOutsideClick: true,
+                allowEscapeKey: true,
+            }).then((result) => {
 
-            
-            document.getElementById('itemDetailsModal').style.display = "block";
-
-            
-            var modal = document.getElementById('itemDetailsModal');
-            var closeButton = document.querySelector('.close');
-
-            
-            closeButton.onclick = function() {
-              modal.style.display = "none";
-            }
-
-            
-            window.onclick = function(event) {
-              if (event.target == modal) {
-                modal.style.display = "none";
-              }
-            }
+            });
+            document.querySelector('.swal2-confirm').style.display = 'none';
         });
 }
+
 
 function fetchInventory() {
     fetch(`/get_swap_shop_inventory`)
@@ -159,14 +149,14 @@ function fetchInventory() {
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
                     <td>${item.weight}</td>
-                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
                     <td>${item.type}</td>
+                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
                     <td>${item.value_per_item}</td>
                     <td>
-                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
-                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Update </button>
-                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="bi bi-printer"></i> Print Barcode</button>
-                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 inventoryBody.appendChild(row);
@@ -194,102 +184,179 @@ function printBarcode(barcode) {
         alert("Barcode number is null.");
     }
 }
+
 function releaseItem(itemId, itemName) {
-    var quantity = prompt("Enter the quantity to release:");
-    var donorInfo = prompt("Enter donor information:");
-    if (quantity !== null && !isNaN(quantity) && quantity.trim() !== '' && donorInfo !== null && donorInfo.trim() !== '') {
-        fetch('/release_item_ss', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ item_id: itemId, quantity: parseInt(quantity), donor_info: donorInfo }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                
-                var quantityInput = document.getElementById(`quantity_${itemId}`);
-                var currentQuantity = parseInt(quantityInput.value);
-                var releasedQuantity = parseInt(quantity);
-                quantityInput.value = currentQuantity - releasedQuantity; // Decrease the quantity
-                
-                var modalStock = document.getElementById('itemStock');
-                var currentStock = parseInt(modalStock.innerText.split(' ')[1]);
-                modalStock.innerText = "Stock: " + (currentStock - releasedQuantity);
-                
-                alert(data.message);
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    } else {
-        alert("Please enter a valid quantity and donor information.");
-    }
+    Swal.fire({
+        title: 'Enter the quantity to release:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.value) {
+            Swal.fire({
+                title: 'Enter recipient information:',
+                input: 'text',
+                showCancelButton: true,
+                confirmButtonText: 'Release',
+                showLoaderOnConfirm: true,
+            }).then((donorResult) => {
+                if (donorResult.value) {
+                    const releaseData = {
+                        item_id: itemId, 
+                        quantity: parseInt(quantityResult.value), 
+                        donor_info: donorResult.value
+                    };
+                    fetch('/release_item_ss', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(releaseData),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let quantityInput = document.getElementById(`quantity_${itemId}`);
+                            let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
+                            quantityInput.value = newQuantity; // Update the input field in the main inventory list
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
+                            Swal.fire('Released!', data.message, 'success');
+                        } else {
+                            Swal.fire('Oops...', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Oops...', 'Something went wrong!', 'error');
+                    });
+                }
+            });
+        }
+    });
 }
 
 function deleteItem(itemId) {
-    fetch('/ss_delete_item', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: itemId }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                document.getElementById(`item_${itemId}`).remove();
-                fetchInventory();
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function updateQuantity(itemId) {
-    const quantityInput = document.getElementById(`quantity_${itemId}`);
-    const quantityToAdd = parseInt(prompt("Enter the quantity to add:"));
-
-    if (!isNaN(quantityToAdd) && quantityToAdd > 0) {
-        const donorInfo = prompt("Enter donor information:");
-        if (donorInfo !== null && donorInfo.trim() !== '') {
-            fetch('/update_quantity_ss', {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Delete Item'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/ss_delete_item', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ item_id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }), 
+                body: JSON.stringify({ id: itemId }),
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    
-                    const currentQuantity = parseInt(quantityInput.value);
-                    quantityInput.value = currentQuantity + quantityToAdd; 
-
-                    
-                    const modalStock = document.getElementById('itemStock');
-                    const currentStock = parseInt(modalStock.innerText.split(' ')[1]);
-                    modalStock.innerText = "Stock: " + (currentStock + quantityToAdd);
-
-                    alert(data.message);
-
+                    Swal.fire(
+                        'Deleted!',
+                        data.message,
+                        'success'
+                    );
+                    document.getElementById(`item_${itemId}`).remove(); // Remove the item row from the table
+                    fetchInventory(); // Refresh the inventory display
                 } else {
-                    alert(data.message);
+                    Swal.fire(
+                        'Failed to Delete!',
+                        data.message,
+                        'error'
+                    );
                 }
             })
-            .catch(error => console.error('Error:', error));
-        } else {
-            alert("Please enter donor information.");
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong!',
+                    'error'
+                );
+            });
         }
-    } else {
-        alert("Please enter a valid quantity to add.");
-    }
+    });
 }
+
+
+function updateQuantity(itemId) {
+    Swal.fire({
+        title: 'Enter the quantity to add:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.dismiss) {
+            return;
+        }
+
+        if (quantityResult.isConfirmed && quantityResult.value) {
+            Swal.fire({
+                title: 'Enter donor information:',
+                input: 'text',
+                inputPlaceholder: 'Enter donor information or select "Unknown"',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                confirmButtonColor: '#001489',
+                showLoaderOnConfirm: true,
+                preConfirm: (donorInfo) => {
+                    if (!donorInfo) {
+                        return 'Unknown';
+                    }
+                    return donorInfo;
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((donorResult) => {
+                if (donorResult.dismiss) {
+                    return;
+                }
+
+                if (donorResult.isConfirmed) {
+                    const donorInfo = donorResult.value ? donorResult.value : "Unknown";
+                    const quantityToAdd = parseInt(quantityResult.value);
+                    fetch('/update_quantity_ss', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ item_id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const quantityInput = document.getElementById(`quantity_${itemId}`);
+                            const newQuantity = parseInt(quantityInput.value) + quantityToAdd;
+                            quantityInput.value = newQuantity;
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity;
+                            Swal.fire('Updated!', data.message, 'success');
+                        } else {
+                            Swal.fire('Oops...', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Oops...', 'Something went wrong!', 'error');
+                    });
+                }
+            });
+        }
+    });
+}
+
 
 function scanBarcode() {
     let scannedBarcode = '';
@@ -335,7 +402,7 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        const itemType = row.querySelector('td:nth-child(5)').textContent.trim().toLowerCase(); // Adjust the nth-child index according to your table structure
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); // Adjust the nth-child index according to your table structure
         
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
             row.style.display = ''; 
