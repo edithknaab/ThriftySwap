@@ -62,6 +62,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
+//sweet alert updates changed the way the code is displayed?..(ask erik)
 document.addEventListener('DOMContentLoaded', function() {
     fetchInventory();
     scanBarcode();
@@ -209,13 +210,11 @@ function updateQuantity(itemId) {
                         });
                     });
                 }
-                // If user does not enter donor information and presses "Submit", show a reminder
                 else if (donorResult.isConfirmed) {
                     Swal.fire('Please enter donor information or select "Unknown".');
                 }
             });
         }
-        // If user enters invalid quantity and presses "Submit", show a reminder
         else if (quantityResult.isConfirmed) {
             Swal.fire('Please enter a valid quantity to add.');
         }
@@ -271,16 +270,15 @@ function deleteItem(itemId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // On successful deletion, show a success message
+                    
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
                         text: data.message,
                     });
-                    document.getElementById(`item_${itemId}`).remove(); // Remove the item row from the table
-                    fetchInventory(); // Optionally, refresh the inventory display if needed
+                    document.getElementById(`item_${itemId}`).remove(); 
+                    fetchInventory(); 
                 } else {
-                    // On failure, show an error message
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',

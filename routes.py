@@ -41,7 +41,7 @@ def add_item():
             # Generate a random barcode number (replace this with your barcode generation logic)
             barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
             
-            # Create a new Inventory object with the generated barcode
+            # Create a new inventory object with the generated barcode
             new_item = Inventory(item_name=item_name, material=material, weight=weight, stock=stock, 
                                  value_per_item=value_per_item, barcode=barcode,type=type)
             
@@ -93,8 +93,6 @@ def scan_barcode():
     inventory_item = Inventory.query.filter_by(barcode=scanned_barcode).first()
 
     if inventory_item:
-        # inventory_item.stock += 1
-        # db.session.commit()
         return jsonify({'success': True, 'message': 'Item found', 'itemId': inventory_item.id})
     else:
         return jsonify({'success': False, 'message': 'Item not found'})
@@ -105,10 +103,10 @@ def scan_barcode():
 def scan_barcode_swap_shop():
     data = request.json
     barcode = data.get('barcode')
-    print('Received barcode:', barcode)  # Log the received barcode
+    print('Received barcode:', barcode)  
 
     item = SwapShopInventory.query.filter_by(barcode=barcode).first()
-    print('Query result:', item)  # Log the result of the database query
+    print('Query result:', item)  
 
     if item:
         return jsonify({'success': True, 'itemId': item.id, 'item_name': item.item_name, 'material': item.material, 'weight': item.weight, 'stock': item.stock, 'value_per_item': str(item.value_per_item), 'barcode': item.barcode})
@@ -304,15 +302,15 @@ def update_quantity():
         if inventory_item:
             intake_transaction = IntakeTransaction(
                 inventory_id=item_id,
-                item_name=inventory_item.item_name,  # Corrected attribute
+                item_name=inventory_item.item_name,  
                 quantity=quantity_to_add,
-                user=current_user.username,  # Assuming the user model has a username field
+                user=current_user.username,  
                 donor_info=donor_info,
                 timestamp=datetime.utcnow()
             )
             db.session.add(intake_transaction)
 
-            inventory_item.stock += quantity_to_add  # Add the quantity to the existing stock
+            inventory_item.stock += quantity_to_add  
             db.session.commit()
             return jsonify({'success': True, 'message': 'Quantity updated successfully'})
         else:
@@ -347,18 +345,16 @@ def release_item():
     quantity = data['quantity']
     donor_info = data['donor_info']
 
-    # Get the item name from the inventory
     inventory_item = Inventory.query.get(item_id)
     if inventory_item:
         if inventory_item.stock >= quantity:
-            # Subtract released quantity from stock
+            
             inventory_item.stock -= quantity
 
-            # Create a new outtake transaction record with donor information
             outtake_transaction = OuttakeTransaction(
                 inventory_id=item_id,
                 quantity=quantity,
-                donor_info=donor_info,  # Include donor information
+                donor_info=donor_info,  
                 timestamp=datetime.utcnow()
             )
             db.session.add(outtake_transaction)
@@ -369,9 +365,9 @@ def release_item():
             return jsonify({'success': False, 'message': 'Insufficient stock'})
     else:
         return jsonify({'success': False, 'message': 'Item not found'})
-   
+
+
 def get_item_name(item_id, transaction_type):
-    # Assuming your item name is stored directly in the transaction model
     transaction = None
     if transaction_type == 'intake':
         transaction = IntakeTransaction.query.get(item_id)
@@ -379,20 +375,16 @@ def get_item_name(item_id, transaction_type):
         transaction = OuttakeTransaction.query.get(item_id)
 
     if transaction:
-        return transaction.item_name  # Adjust this attribute according to your model
+        return transaction.item_name  
     else:
-        return None  # Or handle the case where the item ID is invalid
+        return None  
 
 @app.route('/get_item_details/<int:id>', methods=['GET'])
 def get_item_details(id):
-    # Fetch the item from the database using the provided id
     item = Inventory.query.get(id)
-
-    # If the item does not exist, return a 404 error
     if item is None:
         return jsonify({'error': 'Item not found'}), 404
 
-    # Convert the item to a dictionary
     item_data = {
         'id': item.id,
         'item_name': item.item_name,
@@ -404,9 +396,8 @@ def get_item_details(id):
         'store_id': item.store_id,
         'type': item.type
     }
-
-    # Return the item data as JSON
     return jsonify(item_data)
+
 
 @app.route('/get_ssitem_details/<int:item_id>', methods=['GET'])
 @login_required
@@ -426,15 +417,12 @@ def get_ssitem_details(item_id):
     else:
         return jsonify({'success': False, 'message': 'Item not found'})
 
+
 @app.route('/filter_inventory')
 def filter_inventory():
     date = request.args.get('date')
-
-    # Assuming you have a function to fetch filtered data from the database
-    # Here, we'll simply return all inventory items as an example
     inventory_items = Inventory.query.all()
     
-    # Convert inventory items to a list of dictionaries
     inventory_data = [
         {
             'id': item.id,
@@ -449,25 +437,18 @@ def filter_inventory():
         }
         for item in inventory_items
     ]
-
-    # Return inventory data as JSON
     return jsonify(inventory_data)
 
 
 @app.route('/thriftyowlrecords')
 def thriftyowlrecords():
-    # Query all intake transactions from the database
     intake_transactions = IntakeTransaction.query.all()
-    # Query all outtake transactions from the database
     outtake_transactions = OuttakeTransaction.query.all()
 
-    # Assuming you have a function to collect intake info from transactions
-    # Here, intake_info is a dictionary where keys are items and values are lists of intake transactions
-    print(intake_transactions)  # Before calling collect_intake_info
+    print(intake_transactions)  
     intake_info = collect_intake_info(intake_transactions)
-    print(intake_info)  # After calling collect_intake_info
+    print(intake_info)  
 
-    # Pass the intake and outtake transactions data, as well as intake_info, to the HTML template for rendering
     return render_template('thriftyowlrecords.html', intake_info=intake_info, outtake_transactions=outtake_transactions)
 
 
@@ -482,57 +463,50 @@ def collect_intake_info(intake_transactions):
                 intake_info[item_name] = [transaction]
     return intake_info
 
+
 @app.route('/filter_by_day', methods=['GET'])
 def filter_by_day():
     date_str = request.args.get('date')
     date = datetime.strptime(date_str, '%Y-%m-%d').date()
 
-    # Query intake and outtake transactions for the specified date
     intake_transactions = IntakeTransaction.query.filter(func.date(IntakeTransaction.timestamp) == date).all()
     outtake_transactions = OuttakeTransaction.query.filter(func.date(OuttakeTransaction.timestamp) == date).all()
 
-    # Pass the filtered intake and outtake transactions data to the HTML template for rendering
     return render_template('filtered_transactions.html', intake_transactions=intake_transactions, outtake_transactions=outtake_transactions, filter_date=date)
+
 
 @app.route('/create_intake_transaction', methods=['POST'])
 def create_intake_transaction():
-    data = request.json  # Assuming the data is sent as JSON
+    data = request.json  
 
-    # Extract required data from the request
     inventory_id = data.get('inventory_id')
     item_name = data.get('item_name')
     quantity = data.get('quantity')
     donor_info = data.get('donor_info')
 
-    # Create a new intake transaction
     intake_transaction = IntakeTransaction(
         inventory_id=inventory_id,
         item_name=item_name,
         quantity=quantity,
-        user="User",  # Assuming you have a user field
+        user="User",  
         donor_info=donor_info,
-        timestamp=datetime.now()  # Assuming you have imported datetime
+        timestamp=datetime.now()  
     )
 
-    # Add the new intake transaction to the database session
     db.session.add(intake_transaction)
-
     try:
-        # Commit the changes to the database
         db.session.commit()
         return jsonify({'success': True, 'message': 'Intake transaction created successfully'})
     except Exception as e:
-        # Rollback the transaction if an error occurs
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-# SWAP SHOP ROUTES
-
+# Swap shop routes
 @app.route('/swap_shop_dashboard')
 @login_required
 def swap_shop_dashboard():
-    # Logic to retrieve items and donor info for the swap shop dashboard
+    # retrieve items and donor info for the swap shop dashboard
     items = SwapShopInventory.query.all()
     donor_info = SwapShopIntakeTransaction.query.all()
     return render_template('dashboard_swap_shop.html', items=items, donor_info=donor_info)
@@ -548,20 +522,16 @@ def add_item_swap_shop():
         type = form.type.data
         stock = form.stock.data
         value_per_item = form.value_per_item.data
-
-        
         try:
-            # Generate a random barcode number (replace this with your barcode generation logic)
+            # Generate a random barcode number 
             barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
             
-            # Create a new Swap Shop Inventory object with the submitted data
             new_item = SwapShopInventory(item_name=item_name, material=material, weight=weight, 
                                          stock=stock, value_per_item=value_per_item, barcode=barcode,type=type)
-            
             db.session.add(new_item)
             db.session.commit()
             flash('Item added successfully', 'success')
-            return redirect(url_for('swap_shop_dashboard'))  # Redirect to Swap Shop dashboard
+            return redirect(url_for('swap_shop_dashboard'))  
         except Exception as e:
             db.session.rollback()
             flash(f'Error adding item: {str(e)}', 'error')
@@ -588,90 +558,69 @@ def get_swap_shop_inventory():
 
 @app.route('/swapshoprecords')
 def swapshoprecords():
-    # Query all intake transactions from the database for Swap Shop Inventory
     intake_transactions = SwapShopIntakeTransaction.query.all()
-    # Query all outtake transactions from the database for Swap Shop Inventory
     outtake_transactions = SwapShopOuttakeTransaction.query.all()
-
-    # Collect intake information and donor information into dictionaries
     intake_info, donor_info = collect_swap_shop_intake_info(intake_transactions)
 
-    # Pass the intake and outtake transactions data, as well as intake_info and donor_info, to the HTML template for rendering
     return render_template('swapshoprecords.html', intake_info=intake_info, outtake_transactions=outtake_transactions, donor_info=donor_info)
+
 
 @app.route('/create_swapshop_intake_transaction', methods=['POST'])
 def create_swapshop_intake_transaction():
-    data = request.json  # Assuming the data is sent as JSON
+    data = request.json  
 
-    # Extract required data from the request
     inventory_id = data.get('inventory_id')
     quantity = data.get('quantity')
     donor_info = data.get('donor_info')
 
-    # Create a new intake transaction for Swap Shop Inventory
     intake_transaction = SwapShopIntakeTransaction(
         swap_shop_inventory_id=inventory_id,
         quantity=quantity,
         donor_info=donor_info,
-        timestamp=datetime.now()  # Assuming you have imported datetime
+        timestamp=datetime.now()  
     )
-
-    # Add the new intake transaction to the database session
     db.session.add(intake_transaction)
-
     try:
-        # Commit the changes to the database
         db.session.commit()
         return jsonify({'success': True, 'message': 'Intake transaction for Swap Shop Inventory created successfully'})
     except Exception as e:
-        # Rollback the transaction if an error occurs
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @app.route('/create_swapshop_outtake_transaction', methods=['POST'])
 def create_swapshop_outtake_transaction():
-    data = request.json  # Assuming the data is sent as JSON
-
-    # Extract required data from the request
+    data = request.json  
     inventory_id = data.get('inventory_id')
     quantity = data.get('quantity')
     donor_info = data.get('donor_info')
 
-    # Create a new outtake transaction for Swap Shop Inventory
     outtake_transaction = SwapShopOuttakeTransaction(
         swap_shop_inventory_id=inventory_id,
         quantity=quantity,
         donor_info=donor_info,
-        timestamp=datetime.now()  # Assuming you have imported datetime
+        timestamp=datetime.now()  
     )
-
-    # Add the new outtake transaction to the database session
     db.session.add(outtake_transaction)
-
     try:
-        # Commit the changes to the database
         db.session.commit()
         return jsonify({'success': True, 'message': 'Outtake transaction for Swap Shop Inventory created successfully'})
     except Exception as e:
-        # Rollback the transaction if an error occurs
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
 
 def collect_swap_shop_intake_info(intake_transactions):
     intake_info = {}
     donor_info = {}
     for transaction in intake_transactions:
-        # Check if the transaction is of type SwapShopIntakeTransaction
         if isinstance(transaction, SwapShopIntakeTransaction):
-            item_name = transaction.swap_shop_inventory.item_name  # Access item name through the associated inventory
+            item_name = transaction.swap_shop_inventory.item_name  
             if item_name in intake_info:
                 intake_info[item_name].append(transaction)
             else:
                 intake_info[item_name] = [transaction]
-            
-            # Collect donor information
-            donor_name = transaction.donor_info  # Assuming donor_info is a field in SwapShopIntakeTransaction
+            donor_name = transaction.donor_info  
             if donor_name in donor_info:
                 donor_info[donor_name].append(transaction)
             else:
@@ -686,15 +635,12 @@ def release_item_ss():
     item_id = data.get('item_id')
     quantity = int(data.get('quantity'))
     donor_info = data.get('donor_info')
-
     if not item_id:
         return jsonify({'success': False, 'message': 'Item ID is required'})
-
     swapshop_item = SwapShopInventory.query.get(item_id)
     if swapshop_item:
         if swapshop_item.stock >= quantity:
             swapshop_item.stock -= quantity
-
             outtake_transaction = SwapShopOuttakeTransaction(
                 swap_shop_inventory_id=item_id,
                 quantity=quantity,
@@ -702,9 +648,7 @@ def release_item_ss():
                 timestamp=datetime.utcnow()
             )
             db.session.add(outtake_transaction)
-
             db.session.commit()
-
             return jsonify({'success': True, 'message': 'Item released successfully'})
         else:
             return jsonify({'success': False, 'message': 'Insufficient stock'})
@@ -718,21 +662,21 @@ def update_quantity_ss():
     try:
         data = request.json
         item_id = data.get('item_id')
-        quantity_to_add = int(data.get('quantity_to_add'))  # Change 'new_quantity' to 'quantity_to_add'
+        quantity_to_add = int(data.get('quantity_to_add')) 
         donor_info = data.get('donor_info')
 
         inventory_item = SwapShopInventory.query.get(item_id)
         if inventory_item:
             intake_transaction = SwapShopIntakeTransaction(
                 swap_shop_inventory_id=item_id,
-                quantity=quantity_to_add,  # Use the quantity to add directly
+                quantity=quantity_to_add, 
                 user=current_user.username,
                 donor_info=donor_info,
                 timestamp=datetime.utcnow()
             )
             db.session.add(intake_transaction)
-
-            inventory_item.stock += quantity_to_add  # Add the quantity to the existing stock
+            # Add the quantity to the existing stock
+            inventory_item.stock += quantity_to_add  
             db.session.commit()
             return jsonify({'success': True, 'message': 'Quantity updated successfully'})
         else:
