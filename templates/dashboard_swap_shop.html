@@ -1,5 +1,23 @@
 {% extends "ssbase.html" %}
+
 {% block content %}
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .table {
+        border-radius: 15px;
+        border: 3px solid #001489; /* Thicker border */
+    }
+
+    .table thead th {
+        background-color: #001489; /* Header background color */
+        color: #ffffff; /* Header text color */
+    }
+</style>
+
 <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
@@ -23,7 +41,7 @@
                 <tr>
                     <th>Item Name</th>
                     <th>Material</th>
-                    <th>Weight (kg)</th>
+                    <th>Weight (lb)</th>
                     <th>Type</th>
                     <th>Stock</th>
                     <th>Value Per Item</th>

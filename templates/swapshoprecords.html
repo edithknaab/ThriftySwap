@@ -5,23 +5,40 @@
 {% block content %}
 <style>
     body {
-        font-family: Arial, sans-serif;
+        font-family: 'Poppins', sans-serif;
     }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
+
+    .table {
+        border-radius: 15px;
+        border: 3px solid #001489; 
     }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
+
+    .table thead th {
+        background-color: #001489; 
+        color: #ffffff; 
     }
-    th {
-        background-color: #f2f2f2;
+
+    .form-select-sm {
+        border-radius: 5px;
+        background-color: #f2f2f2; /* Yellow color */
+        color: #212529;
+        padding: 5px 10px;
+        width: 200px;
+        font-size: 14px;
     }
-    .right-aligned {
-        text-align: right;
+
+    .form-select-sm:focus {
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25); /* Yellow color on focus */
+    }
+
+    /* Wider search bar */
+    #intake-search-filter, #outtake-search-filter {
+        width: 100%; /* Extend to full width of the container */
+        border: 1px solid #f1f0ee; /* Yellow color */
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-bottom: 10px; /* Add margin for spacing */
     }
 </style>
 <div>

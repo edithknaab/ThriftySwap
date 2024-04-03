@@ -3,114 +3,110 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <style>
-        
-        .profile-container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            background-color: #f9f9f9;
-            text-align: center; 
-        }
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
 
-        .profile-title {
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .profile-info {
-            margin-bottom: 20px;
-        }
-
-        .profile-image {
-            width: 150px; 
-            height: 150px;
-            border-radius: 50%;
-            margin-bottom: 20px;
-        }
-
-        .logout-btn {
-            display: block;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .changepicbutton {
-            width: 200px; 
-            height: 40px; 
-            margin: auto;
-        }
-      
-        .cancelbutton {
-        width: 100px; 
-        height: 20px; 
+    .profile-container {
+        max-width: 600px;
         margin: auto;
-        text-align: center; 
-        padding: 0; 
-        line-height: 20px; 
-        }
-</style>
+        padding: 20px;
+        border: 3px solid #001489; /* Thicker border */
+        border-radius: 15px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+        text-align: center;
+    }
+
+    .profile-title {
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+    }
+
+    .logout-btn {
+        display: block;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .changepicbutton {
+        width: 250px; /* Wider button */
+        height: 40px;
+        margin: auto;
+    }
+
+    .upload-form {
+        text-align: center;
+    }
+
+    .upload-buttons {
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .cancelbutton {
+        width: 100px;
+        height: 40px;
+    }
+
+    .uploadbutton {
+        width: 250px; /* Wider button */
+        height: 40px;
+    }
 </style>
 
-    </style>
-</head>
-
-<body>
-    <div class="profile-container">
-        <img src="{{ url_for('static', filename=user.profile_picture if user.profile_picture != 'default.jpg' else 'profile_pics/default.jpg') }}" alt="Profile" class="profile-image">
-        <button id="changePicButton" class="btn btn-primary changepicbutton" style="display: block;">Change Profile Picture</button>
-        <form id="uploadForm" action="{{ url_for('profile') }}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()" style="display: none;">
-            <input type="file" id="picture" name="picture" accept="image/*">
-            <button type="submit" class="btn btn-primary changepicbutton">Change Profile Picture</button>
+<div class="profile-container">
+    <img src="{{ url_for('static', filename=user.profile_picture if user.profile_picture != 'default.jpg' else 'profile_pics/default.jpg') }}" alt="Profile" class="profile-image">
+    <button id="changePicButton" class="btn btn-primary changepicbutton" style="display: block;">Change Profile Picture</button>
+    <form id="uploadForm" class="upload-form" action="{{ url_for('profile_swap_shop') }}" method="post" enctype="multipart/form-data" style="display: none;" onsubmit="return validateForm()">
+        <input type="file" id="picture" name="picture" accept="image/*">
+        <div class="upload-buttons">
+            <button type="submit" class="btn btn-primary uploadbutton">Change Profile Picture</button>
             <button type="button" id="cancelButton" class="btn btn-primary cancelbutton">Cancel</button>
-        </form>
-        <h1 class="profile-title">User Profile</h1>
-        <div class="profile-info">
-            <p><i class="fas fa-user"></i> First Name: {{ user.first_name }}</p>
-            <p><i class="fas fa-user"></i> Last Name: {{ user.last_name }}</p>
-            <p><i class="fas fa-user"></i> Username: {{ user.username }}</p>
-            <p><i class="fas fa-envelope"></i> Email: {{ user.email }}</p>
-            <p><i class="fas fa-user-shield"></i> Role: {{ user.role }}</p>
         </div>
-
-        <a href="{{ url_for('logout') }}" class="btn btn-primary logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </form>    
+    <h1 class="profile-title">User Profile</h1>
+    <div class="profile-info">
+        <p><i class="fas fa-user"></i> First Name: {{ user.first_name }}</p>
+        <p><i class="fas fa-user"></i> Last Name: {{ user.last_name }}</p>
+        <p><i class="fas fa-user"></i> Username: {{ user.username }}</p>
+        <p><i class="fas fa-envelope"></i> Email: {{ user.email }}</p>
+        <p><i class="fas fa-user-shield"></i> Role: {{ user.role }}</p>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        function validateForm() {
-            var file = document.getElementById("picture").value;
-            if (file == "") {
-                alert("Please upload a picture");
-                return false;
-            }
-            return true;
-        }
-    </script>
-    <script>
+    <a href="{{ url_for('logout') }}" class="btn btn-primary logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+   function validateForm() {
+    var file = document.getElementById("picture").value;
+    if (file == "") {
+        alert("Please choose an image");
+        return false;
+    }
+    return true;
+}
+
     document.getElementById('cancelButton').addEventListener('click', function() {
-        document.getElementById('uploadForm').style.display = 'none'; 
-        document.getElementById('changePicButton').style.display = 'block'; 
-    });        
-    document.getElementById('changePicButton').addEventListener('click', function() {
-        this.style.display = 'none'; 
-        document.getElementById('uploadForm').style.display = 'block'; 
+        document.getElementById('uploadForm').style.display = 'none';
+        document.getElementById('changePicButton').style.display = 'block';
     });
-    </script>
-</body>
-</html>
+
+    document.getElementById('changePicButton').addEventListener('click', function() {
+    this.style.display = 'none';
+    document.getElementById('uploadForm').style.display = 'block';
+});
+
+</script>
 {% endblock %}

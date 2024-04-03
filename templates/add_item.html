@@ -1,5 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #001489; /* Border color */
+        color: #001489; /* Text color */
+    }
+
+    .form-control:focus {
+        border-color: #001489; /* Border color on focus */
+        box-shadow: 0 0 0 0.25rem rgba(0, 20, 137, 0.25); /* Highlight on focus */
+    }
+
+    .btn-primary {
+        background-color: #ffc107; /* Yellow button background color */
+        border-color: #ffc107; /* Yellow button border color */
+        color: #001489; /* Button text color */
+    }
+
+    .btn-primary:hover {
+        background-color: #e0a800; /* Yellow button background color on hover */
+        border-color: #e0a800; /* Yellow button border color on hover */
+        color: #ffffff; /* Button text color on hover */
+    }
+</style>
 <form method="POST" id="addItemForm" action="{{ url_for('add_item') }}">
     {{ form.hidden_tag() }}
     <div class="form-group">

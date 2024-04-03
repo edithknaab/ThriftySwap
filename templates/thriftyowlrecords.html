@@ -5,35 +5,48 @@
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    
+        .table {
+            border-radius: 15px;
+            border: 3px solid #001489; 
+        }
+    
+        .table thead th {
+            background-color: #001489; 
+            color: #ffffff; 
+        }
+    
+        .form-select-sm {
+            border-radius: 5px;
+            background-color: #f2f2f2; /* Yellow color */
+            color: #212529;
+            padding: 5px 10px;
+            width: 200px;
+            font-size: 14px;
+        }
+    
+        .form-select-sm:focus {
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25); /* Yellow color on focus */
+        }
+    
+        /* Wider search bar */
+        #intake-search-filter, #outtake-search-filter {
+            width: 100%; /* Extend to full width of the container */
+            border: 1px solid #f1f0ee; /* Yellow color */
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-bottom: 10px; /* Add margin for spacing */
+        }
+    </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thrifty Owl Inventory Report</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .right-aligned {
-            text-align: right;
-        }
-        .total-value {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
     <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Thrifty Owl Inventory Report</h2>

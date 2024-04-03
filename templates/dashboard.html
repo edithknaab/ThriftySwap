@@ -3,6 +3,22 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .table {
+        border-radius: 15px;
+        border: 3px solid #001489; /* Thicker border */
+    }
+
+    .table thead th {
+        background-color: #001489; /* Header background color */
+        color: #ffffff; /* Header text color */
+    }
+</style>
+
 <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Thrifty Owl Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
@@ -20,7 +36,7 @@
 <div class="inventory-window">
     <!-- Input fields container -->
     <div>
-        <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Type'...">
+        <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Category'...">
         <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
         
     </div>
@@ -32,7 +48,7 @@
                     <th>Item Name</th>
                     <th>Material</th>
                     <th>Weight (lb)</th>
-                    <th>Type</th>
+                    <th>Category</th>
                     <th>Stock</th>
                     <th>Value Per Item</th>
                     <th>Action</th>
