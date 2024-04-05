@@ -1,5 +1,23 @@
 {% extends "ssbase.html" %}
+
 {% block content %}
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .table {
+        border-radius: 15px;
+        border: 3px solid #001489; 
+    }
+
+    .table thead th {
+        background-color: #001489; 
+        color: #ffffff; 
+    }
+</style>
+
 <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
@@ -23,7 +41,7 @@
                 <tr>
                     <th>Item Name</th>
                     <th>Material</th>
-                    <th>Weight (kg)</th>
+                    <th>Weight (lb)</th>
                     <th>Type</th>
                     <th>Stock</th>
                     <th>Value Per Item</th>
@@ -54,46 +72,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
-
+//button format changed from html to js
 document.addEventListener('DOMContentLoaded', function() {
     fetchInventory();
     scanBarcode();
-    // Create a new div for the buttons
+    
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'button-container';
 
-    // Create the Update button
+
     const updateButton = document.createElement('button');
     updateButton.onclick = function() { updateQuantity(itemId); };
     updateButton.className = 'btn btn-primary modal-button';
     updateButton.textContent = 'Update';
 
-    // Create the Release button
+    
     const releaseButton = document.createElement('button');
     releaseButton.onclick = function() { releaseItem(itemId, data.item_name); };
     releaseButton.className = 'btn btn-primary modal-button';
     releaseButton.textContent = 'Release';
 
-    // Add the buttons to the buttonContainer
     buttonContainer.appendChild(updateButton);
     buttonContainer.appendChild(releaseButton);
 
-    // Add the buttonContainer to the modalContent
     modalContent.appendChild(buttonContainer);
 
-    // Set focus on the barcode input field
     document.getElementById('scannedBarcode').focus();
 
-    // Get the modal and the close button
     var modal = document.getElementById('itemDetailsModal');
     var closeButton = document.querySelector('.close');
 
-    // When the user clicks on the close button, close the modal
     closeButton.onclick = function() {
       modal.style.display = "none";
     }
 
-    // When the user clicks anywhere outside of the modal, close it
     window.onclick = function(event) {
       if (event.target == modal) {
         modal.style.display = "none";
@@ -144,7 +156,7 @@ function fetchInventory() {
             inventoryBody.innerHTML = '';
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
-                row.id = `item_${item.id}`;  // Assign an id to the row
+                row.id = `item_${item.id}`;  
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -223,8 +235,8 @@ function releaseItem(itemId, itemName) {
                         if (data.success) {
                             let quantityInput = document.getElementById(`quantity_${itemId}`);
                             let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
-                            quantityInput.value = newQuantity; // Update the input field in the main inventory list
-                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update the modal's stock display
+                            quantityInput.value = newQuantity; 
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; 
                             Swal.fire('Released!', data.message, 'success');
                         } else {
                             Swal.fire('Oops...', data.message, 'error');
@@ -265,8 +277,8 @@ function deleteItem(itemId) {
                         data.message,
                         'success'
                     );
-                    document.getElementById(`item_${itemId}`).remove(); // Remove the item row from the table
-                    fetchInventory(); // Refresh the inventory display
+                    document.getElementById(`item_${itemId}`).remove(); 
+                    fetchInventory(); 
                 } else {
                     Swal.fire(
                         'Failed to Delete!',
@@ -402,7 +414,7 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); // Adjust the nth-child index according to your table structure
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); 
         
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
             row.style.display = ''; 

@@ -5,23 +5,40 @@
 {% block content %}
 <style>
     body {
-        font-family: Arial, sans-serif;
+        font-family: 'Poppins', sans-serif;
     }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
+
+    .table {
+        border-radius: 15px;
+        border: 3px solid #001489; 
     }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
+
+    .table thead th {
+        background-color: #001489; 
+        color: #ffffff; 
     }
-    th {
-        background-color: #f2f2f2;
+
+    .form-select-sm {
+        border-radius: 5px;
+        background-color: #f2f2f2; 
+        color: #212529;
+        padding: 5px 10px;
+        width: 200px;
+        font-size: 14px;
     }
-    .right-aligned {
-        text-align: right;
+
+    .form-select-sm:focus {
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25); 
+    }
+
+    
+    #intake-search-filter, #outtake-search-filter {
+        width: 100%; 
+        border: 1px solid #f1f0ee;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-bottom: 10px; 
     }
 </style>
 <div>
@@ -195,7 +212,6 @@ function toggleReport() {
         }
     }
 
-// Filter intake table by date
 function filterIntakeByDate() {
     var input, filter, table, tr, td, i;
     input = document.getElementById("intake-date-filter");
@@ -215,10 +231,9 @@ function filterIntakeByDate() {
             }
         }
     }
-    calculateIntakeTotal(filteredRows); // Recalculate total after filtering
+    calculateIntakeTotal(filteredRows); //recalculate the total after filtering
 }
 
-// Filter outtake table by date
 function filterOuttakeByDate() {
     var input, filter, table, tr, td, i;
     input = document.getElementById("outtake-date-filter");
@@ -227,7 +242,7 @@ function filterOuttakeByDate() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[2]; // Index 2 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[2]; 
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent || timestamp_td.innerText;
             if (timestamp_text.includes(filter)) {
@@ -238,11 +253,9 @@ function filterOuttakeByDate() {
             }
         }
     }
-    calculateOuttakeTotal(filteredRows); // Recalculate total after filtering
+    calculateOuttakeTotal(filteredRows); 
 }
 
-
-// Function to search intake table
 function searchIntakeTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("intake-search-filter");
@@ -251,8 +264,8 @@ function searchIntakeTable() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
-        var donorInfo_td = tr[i].getElementsByTagName("td")[3]; // Index 3 for donor info
+        var itemName_td = tr[i].getElementsByTagName("td")[0]; 
+        var donorInfo_td = tr[i].getElementsByTagName("td")[3]; 
         if (itemName_td || donorInfo_td) {
             var itemName_text = itemName_td.textContent || itemName_td.innerText;
             var donorInfo_text = donorInfo_td.textContent || donorInfo_td.innerText;
@@ -264,10 +277,9 @@ function searchIntakeTable() {
             }
         }
     }
-    calculateIntakeTotal(filteredRows); // Recalculate total after searching
+    calculateIntakeTotal(filteredRows); 
 }
 
-// Function to search outtake table
 function searchOuttakeTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("outtake-search-filter");
@@ -276,8 +288,8 @@ function searchOuttakeTable() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
-        var recipientInfo_td = tr[i].getElementsByTagName("td")[3]; // Index 3 for recipient info
+        var itemName_td = tr[i].getElementsByTagName("td")[0];
+        var recipientInfo_td = tr[i].getElementsByTagName("td")[3]; 
         if (itemName_td || recipientInfo_td) {
             var itemName_text = itemName_td.textContent || itemName_td.innerText;
             var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
@@ -288,11 +300,10 @@ function searchOuttakeTable() {
                 tr[i].style.display = "none";
             }
         }
+    calculateOuttakeTotal(filteredRows);
     }
-    calculateOuttakeTotal(filteredRows); // Recalculate total after searching
 }
 
-// Function to calculate intake total
 function calculateIntakeTotal(filteredRows) {
     var intakeTotal = 0;
     for (var i = 0; i < filteredRows.length; i++) {
@@ -302,7 +313,6 @@ function calculateIntakeTotal(filteredRows) {
     document.getElementById("intake-total").innerText = "Total Value: " + intakeTotal.toFixed(2);
 }
 
-// Function to calculate outtake total
 function calculateOuttakeTotal(filteredRows) {
     var outtakeTotal = 0;
     for (var j = 0; j < filteredRows.length; j++) {
@@ -322,7 +332,7 @@ document.getElementById("outtake-search-filter").addEventListener("input", searc
 
 function printIntakeTable() {
     var printContents = document.getElementById("intake-table").outerHTML;
-    printContents += document.getElementById("intake-total").outerHTML; // Include the total value
+    printContents += document.getElementById("intake-total").outerHTML; 
     var originalContents = document.body.innerHTML;
     document.body.innerHTML = printContents;
     window.print();
@@ -331,7 +341,7 @@ function printIntakeTable() {
 
 function printOuttakeTable() {
     var printContents = document.getElementById("outtake-table").outerHTML;
-    printContents += document.getElementById("outtake-total").outerHTML; // Include the total value
+    printContents += document.getElementById("outtake-total").outerHTML; 
     var originalContents = document.body.innerHTML;
     document.body.innerHTML = printContents;
     window.print();
