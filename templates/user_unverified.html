@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Account Confirmation</h1>
+    <p>Thanks for registering! We've sent you an email with a verification code.</p>
+    <p>Please enter the verification code on the <a href="{{ url_for('user_verify') }}">verification page</a> to confirm your account.</p>
+{% endblock %}

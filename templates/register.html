@@ -8,59 +8,94 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='register.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Thrifty Owl & Swap Shop</h1>
-        <h2>Register</h2>
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            
-            <div>
-                {{ form.username.label }} {{ form.username }}
-                {% if form.username.errors %}
-                    <ul class="errors">
-                        {% for error in form.username.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
+<div class="container">
+    <h1>Register Page</h1>
 
-            <div>
-                {{ form.email.label }} {{ form.email }}
-                {% if form.email.errors %}
-                    <ul class="errors">
-                        {% for error in form.email.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
+    <form method="POST" action="" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
 
-            <div>
-                {{ form.password.label }} {{ form.password }}
-                {% if form.password.errors %}
-                    <ul class="errors">
-                        {% for error in form.password.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
+        <div>
+            <label for="first_name">First Name:</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <ul class="errors">
+                    {% for error in form.first_name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 
-            <div>
-                {{ form.role.label }} {{ form.role }}
-                {% if form.role.errors %}
-                    <ul class="errors">
-                        {% for error in form.role.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-            
-            {{ form.submit }}
-        </form>
-        <a href="{{ url_for('login') }}">Already have an account? Log In</a>
-    </div>
+        <div>
+            <label for="last_name">Last Name:</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <ul class="errors">
+                    {% for error in form.last_name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.username.label }} {{ form.username }}
+            {% if form.username.errors %}
+                <ul class="errors">
+                    {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.email.label }} {{ form.email }}
+            {% if form.email.errors %}
+                <ul class="errors">
+                    {% for error in form.email.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.password.label }} {{ form.password }}
+            {% if form.password.errors %}
+                <ul class="errors">
+                    {% for error in form.password.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.role.label }} {{ form.role }}
+            {% if form.role.errors %}
+                <ul class="errors">
+                    {% for error in form.role.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <div>
+            {{ form.picture.label }} {{ form.picture }}
+            {% if form.picture.errors %}
+                <ul class="errors">
+                    {% for error in form.picture.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        {{ form.submit }}
+    </form>
+
+    <a href="{{ url_for('login') }}">Already have an account? Log In</a>
+</div>
 </body>
+
 </html>

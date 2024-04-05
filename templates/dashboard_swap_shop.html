@@ -1,0 +1,428 @@
+{% extends "ssbase.html" %}
+
+{% block content %}
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .table {
+        border-radius: 15px;
+        border: 3px solid #001489; 
+    }
+
+    .table thead th {
+        background-color: #001489; 
+        color: #ffffff; 
+    }
+</style>
+
+<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory</h2>
+<div id="itemDetailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-container"><span class="close">&times;</span></span>
+      <h2>Item Details</h2>
+      <p id="itemName"></p>
+      <p id="itemMaterial"></p>
+      <p id="itemWeight"></p>
+      <p id="itemStock"></p>
+      <p id="itemValue"></p>
+    </div>
+</div>
+<div class="inventory-window">
+    <div>
+        <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Type'...">
+        <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Material</th>
+                    <th>Weight (lb)</th>
+                    <th>Type</th>
+                    <th>Stock</th>
+                    <th>Value Per Item</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.item_name }}</td>
+                    <td>{{ item.material }}</td>
+                    <td>{{ item.weight }}</td>
+                    <td>{{ item.type }}</td>
+                    <td><input type="number" id="quantity_{{ item.id }}" value="{{ item.stock }}" class="form-control" readonly></td>
+                    <td>{{ item.value_per_item }}</td>
+                    <td>
+                        <button onclick="releaseItem('{{ item.id }}', '{{ item.item_name }}')" class="btn btn-primary"><i class="bi bi-box-arrow-up"></i> Release</button>
+                        <button onclick="updateQuantity('{{ item.id }}')" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Update </button>
+                        <button onclick="printBarcode('{{ item.barcode }}')" class="btn btn-success"><i class="bi bi-printer"></i> Print Barcode</button>
+                        <button onclick="deleteItem('{{ item.id }}')" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
+<script>
+//button format changed from html to js
+document.addEventListener('DOMContentLoaded', function() {
+    fetchInventory();
+    scanBarcode();
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+
+
+    const updateButton = document.createElement('button');
+    updateButton.onclick = function() { updateQuantity(itemId); };
+    updateButton.className = 'btn btn-primary modal-button';
+    updateButton.textContent = 'Update';
+
+    
+    const releaseButton = document.createElement('button');
+    releaseButton.onclick = function() { releaseItem(itemId, data.item_name); };
+    releaseButton.className = 'btn btn-primary modal-button';
+    releaseButton.textContent = 'Release';
+
+    buttonContainer.appendChild(updateButton);
+    buttonContainer.appendChild(releaseButton);
+
+    modalContent.appendChild(buttonContainer);
+
+    document.getElementById('scannedBarcode').focus();
+
+    var modal = document.getElementById('itemDetailsModal');
+    var closeButton = document.querySelector('.close');
+
+    closeButton.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+});
+
+function showItemDetails(itemId) {
+    fetch(`/get_ssitem_details/${itemId}`)
+        .then(response => response.json())
+        .then(data => {
+
+            const itemDetailsHtml = `
+                <p><strong>Item Name:</strong> ${data.item_name}</p>
+                <p><strong>Material:</strong> ${data.material}</p>
+                <p><strong>Weight:</strong> ${data.weight} lb</p>
+                <p><strong>Stock:</strong> ${data.stock}</p>
+                <p><strong>Value Per Item:</strong> $${data.value_per_item}</p>
+            `;
+            Swal.fire({
+                title: 'Item Details',
+                html: itemDetailsHtml,
+                showCloseButton: true,
+                focusConfirm: false,
+                showConfirmButton: false,
+                footer: '<button class="btn btn-primary" onclick="updateQuantity(' + itemId + ')" type="button" style="margin-right: 8px;">Add</button>' +
+                        '<button class="btn btn-primary" onclick="releaseItem(' + itemId + ',\'' + data.item_name + '\')" type="button">Release</button>',
+                showCancelButton: false,
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                },
+                buttonsStyling: false,
+                allowOutsideClick: true,
+                allowEscapeKey: true,
+            }).then((result) => {
+
+            });
+            document.querySelector('.swal2-confirm').style.display = 'none';
+        });
+}
+
+
+function fetchInventory() {
+    fetch(`/get_swap_shop_inventory`)
+        .then(response => response.json())
+        .then(data => {
+            const inventoryBody = document.getElementById('inventoryBody');
+            inventoryBody.innerHTML = '';
+            data.inventory.forEach(item => {
+                const row = document.createElement('tr');
+                row.id = `item_${item.id}`;  
+                row.innerHTML = `
+                    <td>${item.item_name}</td>
+                    <td>${item.material}</td>
+                    <td>${item.weight}</td>
+                    <td>${item.type}</td>
+                    <td><input type="number" id="quantity_${item.id}" value="${item.stock}" class="form-control"></td>
+                    <td>${item.value_per_item}</td>
+                    <td>
+                        <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+                        <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                        <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                inventoryBody.appendChild(row);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function printBarcode(barcode) {
+    if (barcode !== null) {
+        const barcodeImage = new Image();
+
+        JsBarcode(barcodeImage, barcode, {
+            format: "CODE128",
+            width: 2,
+            height: 50
+        });
+
+        const printWindow = window.open('', '_blank');
+
+        printWindow.document.body.appendChild(barcodeImage);
+
+        printWindow.print();
+    } else {
+        alert("Barcode number is null.");
+    }
+}
+
+function releaseItem(itemId, itemName) {
+    Swal.fire({
+        title: 'Enter the quantity to release:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.value) {
+            Swal.fire({
+                title: 'Enter recipient information:',
+                input: 'text',
+                showCancelButton: true,
+                confirmButtonText: 'Release',
+                showLoaderOnConfirm: true,
+            }).then((donorResult) => {
+                if (donorResult.value) {
+                    const releaseData = {
+                        item_id: itemId, 
+                        quantity: parseInt(quantityResult.value), 
+                        donor_info: donorResult.value
+                    };
+                    fetch('/release_item_ss', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(releaseData),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let quantityInput = document.getElementById(`quantity_${itemId}`);
+                            let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
+                            quantityInput.value = newQuantity; 
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; 
+                            Swal.fire('Released!', data.message, 'success');
+                        } else {
+                            Swal.fire('Oops...', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Oops...', 'Something went wrong!', 'error');
+                    });
+                }
+            });
+        }
+    });
+}
+
+function deleteItem(itemId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Delete Item'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/ss_delete_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: itemId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Deleted!',
+                        data.message,
+                        'success'
+                    );
+                    document.getElementById(`item_${itemId}`).remove(); 
+                    fetchInventory(); 
+                } else {
+                    Swal.fire(
+                        'Failed to Delete!',
+                        data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong!',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+
+function updateQuantity(itemId) {
+    Swal.fire({
+        title: 'Enter the quantity to add:',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1,
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+    }).then((quantityResult) => {
+        if (quantityResult.dismiss) {
+            return;
+        }
+
+        if (quantityResult.isConfirmed && quantityResult.value) {
+            Swal.fire({
+                title: 'Enter donor information:',
+                input: 'text',
+                inputPlaceholder: 'Enter donor information or select "Unknown"',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                confirmButtonColor: '#001489',
+                showLoaderOnConfirm: true,
+                preConfirm: (donorInfo) => {
+                    if (!donorInfo) {
+                        return 'Unknown';
+                    }
+                    return donorInfo;
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((donorResult) => {
+                if (donorResult.dismiss) {
+                    return;
+                }
+
+                if (donorResult.isConfirmed) {
+                    const donorInfo = donorResult.value ? donorResult.value : "Unknown";
+                    const quantityToAdd = parseInt(quantityResult.value);
+                    fetch('/update_quantity_ss', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ item_id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const quantityInput = document.getElementById(`quantity_${itemId}`);
+                            const newQuantity = parseInt(quantityInput.value) + quantityToAdd;
+                            quantityInput.value = newQuantity;
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity;
+                            Swal.fire('Updated!', data.message, 'success');
+                        } else {
+                            Swal.fire('Oops...', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Oops...', 'Something went wrong!', 'error');
+                    });
+                }
+            });
+        }
+    });
+}
+
+
+function scanBarcode() {
+    let scannedBarcode = '';
+    let timer = null;
+    const inputField = document.getElementById('scannedBarcode');
+
+    inputField.addEventListener('input', function (event) {
+        clearTimeout(timer);
+        scannedBarcode = event.target.value;
+
+        timer = setTimeout(function() {
+            const payload = JSON.stringify({ barcode: scannedBarcode });
+            console.log('Sending barcode:', scannedBarcode); 
+
+            fetch('/scan_barcode_swap_shop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: payload,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Received:', data); 
+                if (data.success) {
+                    
+                    showItemDetails(data.itemId);
+                } else {
+                    alert(`Item not found: ${scannedBarcode}. ${data.message}`);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
+            
+            scannedBarcode = '';
+            inputField.value = '';
+        }, 500); 
+    });
+}
+document.getElementById('searchInput').addEventListener('input', function() {
+    const searchTerm = this.value.trim().toLowerCase();
+    const tableRows = document.querySelectorAll('#inventoryBody tr');
+
+    tableRows.forEach(row => {
+        const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); 
+        
+        if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
+            row.style.display = ''; 
+        } else {
+            row.style.display = 'none'; 
+        }
+    });
+});
+
+</script>
+{% endblock %}
