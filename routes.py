@@ -463,6 +463,75 @@ def collect_intake_info(intake_transactions):
                 intake_info[item_name] = [transaction]
     return intake_info
 
+@app.route('/edit_intake_transaction', methods=['POST'])
+def edit_intake_transaction():
+    transaction_id = request.json.get('transaction_id')
+    donor_info = request.json.get('donor_info')
+
+    # Check if the required parameters are provided
+    if not transaction_id or not donor_info:
+        return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
+
+    # Check if the transaction ID is valid
+    try:
+        transaction_id = int(transaction_id)
+    except ValueError:
+        return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
+
+    # Check if the donor info is valid
+    if not donor_info or len(donor_info) > 100:
+        return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
+
+    transaction = IntakeTransaction.query.get(transaction_id)
+
+    # Check if the transaction exists
+    if transaction is None:
+        return jsonify({'status': 'error', 'message': 'Record not found'}), 404
+
+    transaction.donor_info = donor_info
+
+    # Handle database errors
+    try:
+        db.session.commit()
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 'Database error: ' + str(e)}), 500
+
+    return jsonify({'status': 'success'}), 200
+
+@app.route('/edit_outtake_transaction', methods=['POST'])
+def edit_outtake_transaction():
+    transaction_id = request.json.get('transaction_id')
+    donor_info = request.json.get('donor_info')
+
+    # Check if the required parameters are provided
+    if not transaction_id or not donor_info:
+        return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
+
+    # Check if the transaction ID is valid
+    try:
+        transaction_id = int(transaction_id)
+    except ValueError:
+        return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
+
+    # Check if the donor info is valid
+    if not donor_info or len(donor_info) > 100:
+        return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
+
+    transaction = OuttakeTransaction.query.get(transaction_id)
+
+    # Check if the transaction exists
+    if transaction is None:
+        return jsonify({'status': 'error', 'message': 'Record not found'}), 404
+
+    transaction.donor_info = donor_info
+
+    # Handle database errors
+    try:
+        db.session.commit()
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 'Database error: ' + str(e)}), 500
+
+    return jsonify({'status': 'success'}), 200
 
 @app.route('/filter_by_day', methods=['GET'])
 def filter_by_day():
@@ -587,6 +656,40 @@ def create_swapshop_intake_transaction():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/edit_swapshop_intake_transaction', methods=['POST'])
+def edit_swapshop_intake_transaction():
+    transaction_id = request.json.get('transaction_id')
+    donor_info = request.json.get('donor_info')
+
+    # Check if the required parameters are provided
+    if not transaction_id or not donor_info:
+        return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
+
+    # Check if the transaction ID is valid
+    try:
+        transaction_id = int(transaction_id)
+    except ValueError:
+        return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
+
+    # Check if the donor info is valid
+    if not donor_info or len(donor_info) > 100:
+        return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
+
+    transaction = SwapShopIntakeTransaction.query.get(transaction_id)
+
+    # Check if the transaction exists
+    if transaction is None:
+        return jsonify({'status': 'error', 'message': 'Record not found'}), 404
+
+    transaction.donor_info = donor_info
+
+    # Handle database errors
+    try:
+        db.session.commit()
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 'Database error: ' + str(e)}), 500
+
+    return jsonify({'status': 'success'}), 200
 
 @app.route('/create_swapshop_outtake_transaction', methods=['POST'])
 def create_swapshop_outtake_transaction():
@@ -608,6 +711,41 @@ def create_swapshop_outtake_transaction():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+    
+@app.route('/edit_swapshop_outtake_transaction', methods=['POST'])
+def edit_swapshop_outtake_transaction():
+    transaction_id = request.json.get('transaction_id')
+    donor_info = request.json.get('donor_info')
+
+    # Check if the required parameters are provided
+    if not transaction_id or not donor_info:
+        return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
+
+    # Check if the transaction ID is valid
+    try:
+        transaction_id = int(transaction_id)
+    except ValueError:
+        return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
+
+    # Check if the donor info is valid
+    if not donor_info or len(donor_info) > 100:
+        return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
+
+    transaction = SwapShopOuttakeTransaction.query.get(transaction_id)
+
+    # Check if the transaction exists
+    if transaction is None:
+        return jsonify({'status': 'error', 'message': 'Record not found'}), 404
+
+    transaction.donor_info = donor_info
+
+    # Handle database errors
+    try:
+        db.session.commit()
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 'Database error: ' + str(e)}), 500
+
+    return jsonify({'status': 'success'}), 200
 
 
 def collect_swap_shop_intake_info(intake_transactions):

@@ -100,7 +100,10 @@
                         </script>
                     </td>
                     <td>{{ intake_transaction.quantity }}</td>
-                    <td>{{ intake_transaction.donor_info }}</td>
+                    <td>
+                        {{ intake_transaction.donor_info }}
+                        <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ intake_transaction.id }}', 'intake')">   
+                    </td>
                     <td>{{ intake_transaction.inventory.value_per_item * intake_transaction.quantity }}</td>
                 </tr>
                 {% endfor %}
@@ -142,7 +145,10 @@
                     <td>{{ outtake_transaction.quantity }}</td>
                     <td>{{ outtake_transaction.inventory.weight }}</td> 
                     <td>{{ outtake_transaction.inventory.weight * outtake_transaction.quantity }}</td> 
-                    <td>{{ outtake_transaction.donor_info }}</td>
+                    <td>
+                        {{ outtake_transaction.donor_info }}
+                        <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
+                    </td>
                     <td>{{ outtake_transaction.inventory.value_per_item }}</td> 
                     <td>
                         <script>
@@ -163,8 +169,53 @@
     </div>
     
     <script>
+        function editTransaction(transactionId, type) {
+            var donorInfo = prompt("Enter new donor info:");
+            if (donorInfo === null || donorInfo === "") {
+                alert("You must enter a donor info.");
+                return;
+            }
+
+            var url = type === 'intake' ? '/edit_intake_transaction' : '/edit_outtake_transaction';
+            var data = { 'transaction_id': transactionId, 'donor_info': donorInfo };
+
+            // Store the current report type in the local storage before reloading the page
+            localStorage.setItem('reportType', type);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert("The transaction was successfully edited.");
+                    location.reload();
+                } else {
+                    alert("An error occurred: " + data.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
         function toggleReport() {
             var reportType = document.getElementById("report-type").value;
+
+            // Check if there is a report type stored in the local storage
+            var storedReportType = localStorage.getItem('reportType');
+            if (storedReportType) {
+                reportType = storedReportType;
+                // Set the select value to the stored report type
+                document.getElementById("report-type").value = reportType;
+                // Remove the stored report type from the local storage
+                localStorage.removeItem('reportType');
+            }
+
             if (reportType === "intake") {
                 document.getElementById("intake-report").style.display = "block";
                 document.getElementById("outtake-report").style.display = "none";
