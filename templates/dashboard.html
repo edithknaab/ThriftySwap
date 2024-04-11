@@ -17,29 +17,9 @@
         background-color: #001489; 
         color: #ffffff; 
     }
-    .sortable-th {
-        cursor: pointer;
-        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    }
-
-    .sortable-th:hover {
-        background-color: #f5c445; /* Slightly darker shade on hover */
-    }
-
-    .sort-icon {
-        font-size: 0.8em;
-        margin-left: 5px;
-    }
 </style>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; margin-bottom: 0;">Thrifty Owl Inventory</h2>
-    <div class="mb-3">
-        <button id="addItemBtn" class="btn btn-primary">
-            Add New Item <i class="fas fa-plus"></i>
-        </button>
-    </div>
-</div>
+<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Thrifty Owl Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
         <span class="close-container"><span class="close">&times;</span></span>
@@ -51,10 +31,10 @@
         <p id="itemValue"></p>
     </div>
 </div>
+
 <div class="inventory-window">
     <div>
         <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Category'...">
-        <!-- Place this above the scan barcode field -->
         <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
         
     </div>
@@ -63,16 +43,15 @@
         <table class="table table-bordered table-sm table-hover">
             <thead>
                 <tr>
-                    <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(2)">Weight (lb) <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th>Item Name</th>
+                    <th>Material</th>
+                    <th>Weight (lb)</th>
+                    <th>Category</th>
                     <th>Stock</th>
-                    <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th>Value Per Item</th>
                     <th>Action</th>
                 </tr>
-                
-            </thead>            
+            </thead>
             <tbody id="inventoryBody">
             </tbody>
             <tfoot>
@@ -97,99 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
     scanBarcode();
    
 });
-
-document.getElementById('addItemBtn').addEventListener('click', function() {
-  Swal.fire({
-    title: 'Add New Item to Thrifty Owl',
-    html: `
-      <style>
-        .swal2-input, .swal2-select { 
-          margin: 0.5em 0; 
-          padding: 10px; 
-          width: 100%; 
-          box-sizing: border-box; 
-          border-radius: 4px; 
-          border: 1px solid #d1d3d4; 
-        }
-        .swal2-select::placeholder {
-          color: #aaa;
-        }
-        .swal2-select option {
-          color: black;
-        }
-        .swal2-select option[disabled] {
-          color: #e4e4e4;
-        }
-      </style>
-      <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
-      <input type="text" id="material" class="swal2-input" placeholder="Material">
-      <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
-      <input type="number" id="stock" class="swal2-input" placeholder="Stock" required min="0">
-      <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
-      <select id="type" class="swal2-input swal2-select">
-        <option value="" disabled selected hidden>Select Type</option>
-        <option value="School Supplies">School Supplies</option>
-        <option value="Bedroom Items">Bedroom Items</option>
-        <option value="Kitchen">Kitchen</option>
-        <option value="Decor">Decor</option>
-        <option value="Bathroom Items">Bathroom Items</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Miscellaneous">Miscellaneous</option>
-      </select>
-    `,
-    focusConfirm: false,
-    preConfirm: () => {
-      if(document.getElementById('type').value === "") {
-        Swal.showValidationMessage("Please select an item type");
-        return false;
-      }
-      return {
-        item_name: document.getElementById('item_name').value,
-        material: document.getElementById('material').value,
-        weight: parseFloat(document.getElementById('weight').value),
-        stock: parseInt(document.getElementById('stock').value),
-        value_per_item: parseFloat(document.getElementById('value_per_item').value),
-        type: document.getElementById('type').value
-      };
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Add Item',
-    confirmButtonColor: '#001489',
-    showLoaderOnConfirm: true
-  }).then((result) => {
-    if (result.isConfirmed) {
-      fetch('/add_item', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(result.value)
-      })
-      .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-            Swal.fire('Success!', data.message, 'success').then(result => {
-              if (result.isConfirmed) {
-                location.reload();
-              }
-            });
-        } else {
-            Swal.fire('Error!', data.message, 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        Swal.fire('Error!', 'There was a problem with your fetch operation.', 'error');
-      });
-    }
-  });
-});
-
 
 function showItemDetails(itemId) {
     fetch(`/get_item_details/${itemId}`)
@@ -328,46 +214,12 @@ function updateQuantity(itemId) {
                 confirmButtonText: 'Submit',
                 confirmButtonColor: '#001489',
                 showLoaderOnConfirm: true,
-
-                preConfirm: (donorValue) => {
-                    if (donorValue.trim() === '') {
-                        return 'Unknown';
-                    }
-                    return donorValue.trim();
-
             }).then((donorResult) => {
                 
                 if (donorResult.dismiss) {
                     
                     return;
-
                 }
-            }).then((donorResult) => {
-                // Proceed with the update quantity logic
-                const quantityToAdd = parseInt(quantityResult.value);
-                const newQuantity = parseInt(document.getElementById(`quantity_${itemId}`).value) + quantityToAdd;
-                const donorInfo = donorResult.value;
-
-                fetch('/update_quantity', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
-                        document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
-
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Updated!',
-                            text: data.message,
-                        });
-                    } else {
 
                 if (donorResult.isConfirmed && donorResult.value.trim() !== '') {
                     
@@ -402,22 +254,16 @@ function updateQuantity(itemId) {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: data.message,
+                            text: 'Something went wrong!',
                         });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong!',
                     });
-                });
+                }
+                else if (donorResult.isConfirmed) {
+                    Swal.fire('Please enter donor information or select "Unknown".');
+                }
             });
         }
         else if (quantityResult.isConfirmed) {
@@ -425,8 +271,6 @@ function updateQuantity(itemId) {
         }
     });
 }
-
-
 
 
 
@@ -522,44 +366,12 @@ function releaseItem(itemId, itemName) {
     }).then((quantityResult) => {
         if (quantityResult.value) {
             Swal.fire({
-                title: 'Enter recipient or blank for "Unknown":',
+                title: 'Enter recipient information:',
                 input: 'text',
                 showCancelButton: true,
                 confirmButtonText: 'Release',
                 showLoaderOnConfirm: true,
             }).then((donorResult) => {
-
-                const recipientInfo = donorResult.value ? donorResult.value : "Unknown";
-
-                const releaseData = {
-                    item_name: itemName, 
-                    item_id: itemId, 
-                    quantity: parseInt(quantityResult.value), 
-                    donor_info: recipientInfo
-                };
-
-                fetch('/release_item', { 
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(releaseData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        let quantityInput = document.getElementById(`quantity_${itemId}`);
-                        let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
-                        quantityInput.value = newQuantity;
-                        document.getElementById('itemStock').innerText = "Stock: " + newQuantity;
-                        Swal.fire('Released!', data.message, 'success');
-                    } else {
-                        Swal.fire('Oops...', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire('Oops...', 'Something went wrong!', 'error');
-                });
-
                 if (donorResult.value) {
                     const releaseData = {
                         item_name: itemName, 
@@ -590,12 +402,10 @@ function releaseItem(itemId, itemName) {
                         Swal.fire('Oops...', 'Something went wrong!', 'error');
                     });
                 }
-
             });
         }
     });
 }
-
 
 
 function scanBarcode() {
@@ -632,58 +442,6 @@ function scanBarcode() {
             inputField.value = '';
         }, 500); 
     });
-}
-
-function sortTable(columnIndex) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir = "asc", switchcount = 0;
-    table = document.querySelector(".table");
-    switching = true;
-
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[columnIndex];
-            y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
-
-            // Determine if we need to parse as float for "Weight" and "Value Per Item" columns
-            let xVal, yVal;
-            if (columnIndex === 2 || columnIndex === 5) { // Numeric sorting for "Weight" and "Value Per Item"
-                xVal = parseFloat(x.innerHTML) || 0;
-                yVal = parseFloat(y.innerHTML) || 0;
-            } else { // Alphabetical sorting for other columns
-                xVal = x.innerHTML.toLowerCase();
-                yVal = y.innerHTML.toLowerCase();
-            }
-
-            // Ascending or descending comparison
-            if (dir == "asc") {
-                if (xVal > yVal) {
-                    shouldSwitch = true;
-                    break;
-                }
-            } else if (dir == "desc") {
-                if (xVal < yVal) {
-                    shouldSwitch = true;
-                    break;
-                }
-            }
-        }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            switchcount++;
-        } else {
-            if (switchcount == 0 && dir == "asc") {
-                dir = "desc";
-                switching = true;
-            } else if (switchcount !== 0 && dir == "desc") {
-                dir = "asc"; // Reset direction after a full cycle
-            }
-        }
-    }
 }
 
 document.getElementById('searchInput').addEventListener('input', function() {

@@ -16,31 +16,9 @@
         background-color: #001489; 
         color: #ffffff; 
     }
-
-    .sortable-th {
-        cursor: pointer;
-        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-    }
-
-    .sortable-th:hover {
-        background-color: #f5c445; /* Slightly darker shade on hover */
-    }
-
-    .sort-icon {
-        font-size: 0.8em;
-        margin-left: 5px;
-    }
-
 </style>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; margin-bottom: 0;">Swap Shop Inventory</h2>
-    <div class="mb-3">
-        <button id="addItemSwapShopBtn" class="btn btn-primary">
-            Add New Item <i class="fas fa-plus"></i>
-        </button>
-    </div>
-</div>
+<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory</h2>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
       <span class="close-container"><span class="close">&times;</span></span>
@@ -61,19 +39,12 @@
         <table class="table table-bordered table-sm table-hover">
             <thead>
                 <tr>
-
-                    <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(2)">Weight (lb) <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
-
                     <th>Item Name</th>
                     <th>Material</th>
                     <th>Weight (lb)</th>
                     <th>Category</th>
-
                     <th>Stock</th>
-                    <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th>Value Per Item</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -151,97 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 });
-
-
-document.getElementById('addItemSwapShopBtn').addEventListener('click', function() {
-Swal.fire({
-title: 'Add New Item to Swap Shop',
-html: `
-    <style>
-    .swal2-input, .swal2-select { 
-        margin: 0.5em 0; 
-        padding: 10px; 
-        width: 100%; 
-        box-sizing: border-box; 
-        border-radius: 4px; 
-        border: 1px solid #d1d3d4; 
-    }
-    .swal2-select::placeholder {
-        color: #aaa;
-    }
-    .swal2-select option {
-        color: black;
-    }
-    .swal2-select option[disabled] {
-        color: #e4e4e4;
-    }
-    </style>
-    <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
-    <input type="text" id="material" class="swal2-input" placeholder="Material">
-    <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
-    <input type="number" id="stock" class="swal2-input" placeholder="Stock" required min="0">
-    <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
-    <select id="type" class="swal2-input swal2-select">
-    <option value="" disabled selected hidden>Select Type</option>
-    <option value="School Supplies">School Supplies</option>
-    <option value="Bedroom Items">Bedroom Items</option>
-    <option value="Kitchen">Kitchen</option>
-    <option value="Decor">Decor</option>
-    <option value="Bathroom Items">Bathroom Items</option>
-    <option value="Electronics">Electronics</option>
-    <option value="Miscellaneous">Miscellaneous</option>
-    </select>
-    `,
-    focusConfirm: false,
-    preConfirm: () => {
-    return {
-        item_name: document.getElementById('item_name').value,
-        material: document.getElementById('material').value,
-        weight: parseFloat(document.getElementById('weight').value),
-        stock: parseInt(document.getElementById('stock').value),
-        value_per_item: parseFloat(document.getElementById('value_per_item').value),
-        type: document.getElementById('type').value
-    };
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Add Item',
-    confirmButtonColor: '#001489',
-    showLoaderOnConfirm: true
-}).then((result) => {
-    if (result.isConfirmed) {
-    fetch('/add_item_swap_shop', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(result.value)
-    })
-    .then(response => {
-        if (!response.ok) {
-        throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-        Swal.fire('Success!', data.message, 'success').then(result => {
-            if (result.isConfirmed) {
-            location.reload();
-            }
-        });
-        } else {
-        Swal.fire('Error!', data.message, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        Swal.fire('Error!', 'There was a problem with your fetch operation.', 'error');
-    });
-    }
-});
-});
-
-
 
 function showItemDetails(itemId) {
     fetch(`/get_ssitem_details/${itemId}`)
@@ -346,18 +226,12 @@ function releaseItem(itemId, itemName) {
                 showCancelButton: true,
                 confirmButtonText: 'Release',
                 showLoaderOnConfirm: true,
-                preConfirm: (recipientValue) => {
-                    if (recipientValue.trim() === '') {
-                        return 'Unknown';
-                    }
-                    return recipientValue.trim();
-                }
-            }).then((recipientResult) => {
-                if (recipientResult.value) {
+            }).then((donorResult) => {
+                if (donorResult.value) {
                     const releaseData = {
                         item_id: itemId, 
                         quantity: parseInt(quantityResult.value), 
-                        recipient_info: recipientResult.value
+                        donor_info: donorResult.value
                     };
                     fetch('/release_item_ss', {
                         method: 'POST',
@@ -385,8 +259,6 @@ function releaseItem(itemId, itemName) {
         }
     });
 }
-
-
 
 function deleteItem(itemId) {
     Swal.fire({
@@ -458,7 +330,7 @@ function updateQuantity(itemId) {
             Swal.fire({
                 title: 'Enter donor information:',
                 input: 'text',
-                inputPlaceholder: 'Enter donor or blank for "Unknown"',
+                inputPlaceholder: 'Enter donor information or select "Unknown"',
                 showCancelButton: true,
                 confirmButtonText: 'Submit',
                 confirmButtonColor: '#001489',
@@ -543,58 +415,6 @@ function scanBarcode() {
             inputField.value = '';
         }, 500); 
     });
-}
-
-function sortTable(columnIndex) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir = "asc", switchcount = 0;
-    table = document.querySelector(".table");
-    switching = true;
-
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-
-        for (i = 1; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[columnIndex];
-            y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
-
-            // Determine if we need to parse as float for "Weight" and "Value Per Item" columns
-            let xVal, yVal;
-            if (columnIndex === 2 || columnIndex === 5) { // Numeric sorting for "Weight" and "Value Per Item"
-                xVal = parseFloat(x.innerHTML) || 0;
-                yVal = parseFloat(y.innerHTML) || 0;
-            } else { // Alphabetical sorting for other columns
-                xVal = x.innerHTML.toLowerCase();
-                yVal = y.innerHTML.toLowerCase();
-            }
-
-            // Ascending or descending comparison
-            if (dir == "asc") {
-                if (xVal > yVal) {
-                    shouldSwitch = true;
-                    break;
-                }
-            } else if (dir == "desc") {
-                if (xVal < yVal) {
-                    shouldSwitch = true;
-                    break;
-                }
-            }
-        }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            switchcount++;
-        } else {
-            if (switchcount == 0 && dir == "asc") {
-                dir = "desc";
-                switching = true;
-            } else if (switchcount !== 0 && dir == "desc") {
-                dir = "asc"; // Reset direction after a full cycle
-            }
-        }
-    }
 }
 
 document.getElementById('searchInput').addEventListener('input', function() {
