@@ -10,12 +10,12 @@
 
     .table {
         border-radius: 15px;
-        border: 3px solid #001489; /* Thicker border */
+        border: 3px solid #001489; 
     }
 
     .table thead th {
-        background-color: #001489; /* Header background color */
-        color: #ffffff; /* Header text color */
+        background-color: #001489; 
+        color: #ffffff; 
     }
     .sortable-th {
         cursor: pointer;
@@ -51,9 +51,7 @@
         <p id="itemValue"></p>
     </div>
 </div>
-<!-- Inventory window -->
 <div class="inventory-window">
-    <!-- Input fields container -->
     <div>
         <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Category'...">
         <!-- Place this above the scan barcode field -->
@@ -77,6 +75,16 @@
             </thead>            
             <tbody id="inventoryBody">
             </tbody>
+            <tfoot>
+                <tr id="totalRow">
+                    <td colspan="3" style="text-align: right;"><strong>Total Weight:</strong></td>
+                    <td id="totalWeight" colspan="4"></td>
+                </tr>
+                <tr id="totalValueRow" style="display: none;">
+                    <td colspan="3" style="text-align: right;"><strong>Total Value:</strong></td>
+                    <td id="totalValue" colspan="4"></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
@@ -200,9 +208,9 @@ function showItemDetails(itemId) {
             Swal.fire({
                 title: 'Item Details',
                 html: itemDetailsHtml,
-                showCloseButton: true, // Allows closing by clicking the "X" button
+                showCloseButton: true, 
                 focusConfirm: false,
-                showConfirmButton: false, // Removes the "Close" button
+                showConfirmButton: false,
                 footer: '<button class="btn btn-primary" onclick="updateQuantity(' + itemId + ')" type="button" style="margin-right: 8px;">Add</button>' +
                         '<button class="btn btn-primary" onclick="releaseItem(' + itemId + ',\'' + data.item_name + '\')" type="button">Release</button>',
                 showCancelButton: false,
@@ -210,13 +218,11 @@ function showItemDetails(itemId) {
                     confirmButton: 'btn btn-success',
                 },
                 buttonsStyling: false,
-                allowOutsideClick: true, // Allows closing by clicking outside the modal
-                allowEscapeKey: true, // Allows closing by pressing the ESC key
+                allowOutsideClick: true, 
+                allowEscapeKey: true, 
             });
         });
 }
-
-
 
 function fetchInventory() {
     fetch(`/get_inventory`)
@@ -224,9 +230,11 @@ function fetchInventory() {
         .then(data => {
             const inventoryBody = document.getElementById('inventoryBody');
             inventoryBody.innerHTML = '';
+            let totalWeight = 0; 
+            let totalValue = 0; 
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
-                row.id = `item_${item.id}`;  // Assign an id to the row
+                row.id = `item_${item.id}`;  
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -242,10 +250,53 @@ function fetchInventory() {
                     </td>
                 `;
                 inventoryBody.appendChild(row);
+                totalWeight += item.weight * item.stock; 
+                totalValue += item.value_per_item * item.stock; 
             });
+
+            
+            const totalWeightCell = document.getElementById('totalWeight');
+            totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
+
+            
+            const totalValueRow = document.getElementById('totalValueRow');
+            const totalValueCell = document.getElementById('totalValue');
+            totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
+            totalValueRow.style.display = ''; 
         })
         .catch(error => console.error('Error:', error));
 }
+
+document.getElementById('searchInput').addEventListener('input', function() {
+    const searchTerm = this.value.trim().toLowerCase();
+    const tableRows = document.querySelectorAll('#inventoryBody tr');
+
+    let totalWeight = 0; 
+    let totalValue = 0; 
+
+    tableRows.forEach(row => {
+        const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
+        if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
+            row.style.display = ''; 
+            const itemStock = parseInt(row.querySelector('td:nth-child(5) input').value);
+            const itemWeight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
+            const itemValue = parseFloat(row.querySelector('td:nth-child(6)').textContent);
+            totalWeight += (itemWeight * itemStock); 
+            totalValue += (itemValue * itemStock); 
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    
+    const totalWeightCell = document.getElementById('totalWeight');
+    totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
+
+    const totalValueCell = document.getElementById('totalValue');
+    totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
+});
+
 
 function updateQuantity(itemId) {
     // Start with quantity input
@@ -262,14 +313,14 @@ function updateQuantity(itemId) {
         confirmButtonColor: '#001489',
         showLoaderOnConfirm: true,
     }).then((quantityResult) => {
-        // Check if the dialog was dismissed (e.g., by pressing "Cancel")
+        
         if (quantityResult.dismiss) {
-            // If dismissed, just return and do nothing
+            
             return;
         }
         
         if (quantityResult.isConfirmed && quantityResult.value) {
-            // Then ask for donor information
+            
             Swal.fire({
                 title: 'Enter donor information:',
                 input: 'text',
@@ -277,11 +328,19 @@ function updateQuantity(itemId) {
                 confirmButtonText: 'Submit',
                 confirmButtonColor: '#001489',
                 showLoaderOnConfirm: true,
+
                 preConfirm: (donorValue) => {
                     if (donorValue.trim() === '') {
                         return 'Unknown';
                     }
                     return donorValue.trim();
+
+            }).then((donorResult) => {
+                
+                if (donorResult.dismiss) {
+                    
+                    return;
+
                 }
             }).then((donorResult) => {
                 // Proceed with the update quantity logic
@@ -302,12 +361,48 @@ function updateQuantity(itemId) {
                         document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
                         document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
 
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Updated!',
                             text: data.message,
                         });
                     } else {
+
+                if (donorResult.isConfirmed && donorResult.value.trim() !== '') {
+                    
+                    const quantityToAdd = parseInt(quantityResult.value);
+                    const newQuantity = parseInt(document.getElementById(`quantity_${itemId}`).value) + quantityToAdd;
+
+                    fetch('/update_quantity', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorResult.value }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: data.message,
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: data.message,
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
@@ -433,6 +528,7 @@ function releaseItem(itemId, itemName) {
                 confirmButtonText: 'Release',
                 showLoaderOnConfirm: true,
             }).then((donorResult) => {
+
                 const recipientInfo = donorResult.value ? donorResult.value : "Unknown";
 
                 const releaseData = {
@@ -463,6 +559,38 @@ function releaseItem(itemId, itemName) {
                     console.error('Error:', error);
                     Swal.fire('Oops...', 'Something went wrong!', 'error');
                 });
+
+                if (donorResult.value) {
+                    const releaseData = {
+                        item_name: itemName, 
+                        item_id: itemId, 
+                        quantity: parseInt(quantityResult.value), 
+                        donor_info: donorResult.value
+                    };
+                    //endpoint match
+                    fetch('/release_item', { 
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(releaseData),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let quantityInput = document.getElementById(`quantity_${itemId}`);
+                            let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
+                            quantityInput.value = newQuantity; 
+                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; 
+                            Swal.fire('Released!', data.message, 'success');
+                        } else {
+                            Swal.fire('Oops...', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Oops...', 'Something went wrong!', 'error');
+                    });
+                }
+
             });
         }
     });
@@ -489,9 +617,9 @@ function scanBarcode() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data); // Log the server response
+                console.log(data); 
                 if (data.success) {
-                    // Call the showItemDetails function with the item id
+                    
                     showItemDetails(data.itemId);
                 } else {
                     alert(`Item not found: ${scannedBarcode}. ${data.message}`);
@@ -499,10 +627,10 @@ function scanBarcode() {
             })
             .catch(error => console.error('Error:', error));
 
-            // Clear the input field and scannedBarcode variable
+            
             scannedBarcode = '';
             inputField.value = '';
-        }, 500); // Wait for 500ms after the last input to send the barcode
+        }, 500); 
     });
 }
 
@@ -566,9 +694,9 @@ document.getElementById('searchInput').addEventListener('input', function() {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
         const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
-            row.style.display = ''; // Show the row if item name or type matches search term
+            row.style.display = ''; 
         } else {
-            row.style.display = 'none'; // Hide the row if item name or type doesn't match search term
+            row.style.display = 'none'; 
         }
     });
 });
