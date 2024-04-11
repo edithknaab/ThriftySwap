@@ -42,7 +42,7 @@
                     <th>Item Name</th>
                     <th>Material</th>
                     <th>Weight (lb)</th>
-                    <th>Type</th>
+                    <th>Category</th>
                     <th>Stock</th>
                     <th>Value Per Item</th>
                     <th>Action</th>
@@ -66,6 +66,16 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            <tfoot>
+                <tr id="totalRow">
+                    <td colspan="4" style="text-align: right;"><strong>Total Weight:</strong></td>
+                    <td id="totalWeight" colspan="3"></td>
+                </tr>
+                <tr id="totalValueRow">
+                    <td colspan="4" style="text-align: right;"><strong>Total Value:</strong></td>
+                    <td id="totalValue" colspan="3"></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
@@ -154,6 +164,8 @@ function fetchInventory() {
         .then(data => {
             const inventoryBody = document.getElementById('inventoryBody');
             inventoryBody.innerHTML = '';
+            let totalWeight = 0; 
+            let totalValue = 0; 
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
                 row.id = `item_${item.id}`;  
@@ -172,30 +184,26 @@ function fetchInventory() {
                     </td>
                 `;
                 inventoryBody.appendChild(row);
+                
+               
+                const itemStock = parseInt(item.stock);
+                const itemWeight = parseFloat(item.weight);
+                const itemValue = parseFloat(item.value_per_item);
+                totalWeight += (itemWeight * itemStock); 
+                totalValue += (itemValue * itemStock); 
             });
+
+            
+            const totalWeightCell = document.getElementById('totalWeight');
+            totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
+
+            
+            const totalValueCell = document.getElementById('totalValue');
+            totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
         })
         .catch(error => console.error('Error:', error));
 }
 
-function printBarcode(barcode) {
-    if (barcode !== null) {
-        const barcodeImage = new Image();
-
-        JsBarcode(barcodeImage, barcode, {
-            format: "CODE128",
-            width: 2,
-            height: 50
-        });
-
-        const printWindow = window.open('', '_blank');
-
-        printWindow.document.body.appendChild(barcodeImage);
-
-        printWindow.print();
-    } else {
-        alert("Barcode number is null.");
-    }
-}
 
 function releaseItem(itemId, itemName) {
     Swal.fire({
@@ -408,21 +416,38 @@ function scanBarcode() {
         }, 500); 
     });
 }
+
 document.getElementById('searchInput').addEventListener('input', function() {
     const searchTerm = this.value.trim().toLowerCase();
     const tableRows = document.querySelectorAll('#inventoryBody tr');
 
+    let totalWeight = 0; 
+    let totalValue = 0; 
+
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); 
-        
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
             row.style.display = ''; 
+            const itemStock = parseInt(row.querySelector('td:nth-child(5) input').value);
+            const itemWeight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
+            const itemValue = parseFloat(row.querySelector('td:nth-child(6)').textContent);
+            totalWeight += (itemWeight * itemStock); 
+            totalValue += (itemValue * itemStock); 
         } else {
             row.style.display = 'none'; 
         }
     });
+
+    
+    const totalWeightCell = document.getElementById('totalWeight');
+    totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
+
+    
+    const totalValueCell = document.getElementById('totalValue');
+    totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
 });
+
 
 </script>
 {% endblock %}
