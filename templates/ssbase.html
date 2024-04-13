@@ -24,9 +24,12 @@
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Thrifty Owl</a></li>
+                    <!-- Adding additional items from the first base.html version -->
+                    <li><a class="dropdown-item" href="{{ url_for('add_item_swap_shop') }}">Add Item</a></li>
                 </ul>
             </div>
     
+            <!-- Navbar Toggler for Mobile Devices -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
