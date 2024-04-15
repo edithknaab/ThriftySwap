@@ -72,19 +72,19 @@ class ResetPasswordForm(FlaskForm):
 class ItemForm(FlaskForm):
     item_name = StringField('Item Name', validators=[InputRequired(), Length(min=1, max=50)])
     material = StringField('Material', validators=[Length(max=50)])
-    weight = FloatField('Weight (lb)', validators=[InputRequired(), NumberRange(min=0)])
+    weight = FloatField('Weight (kg)', validators=[InputRequired(), NumberRange(min=0)])
     stock = IntegerField('Stock', validators=[InputRequired(), NumberRange(min=0)])
     value_per_item = FloatField('Value Per Item', validators=[InputRequired(), NumberRange(min=0)])
-    type = StringField('Category', validators=[InputRequired(), Length(min=1, max=50)])
+    type = SelectField('Type', choices=[('School Supplies'), ('Bedroom Items'), ('Kitchen'), ('Decor'), ('Bathroom Items'), ('Electronics'), ('Miscellaneous')], default='Kitchen')
     barcode = StringField('Barcode', validators=[Length(max=50)])
     submit = SubmitField('Add Item')
 
 class SSItemForm(FlaskForm):
     item_name = StringField('Item Name', validators=[InputRequired(), Length(min=1, max=50)])
     material = StringField('Material', validators=[Length(max=50)])
-    weight = FloatField('Weight (lb)', validators=[InputRequired(), NumberRange(min=0)])
+    weight = FloatField('Weight (kg)', validators=[InputRequired(), NumberRange(min=0)])
     stock = IntegerField('Stock', validators=[InputRequired(), NumberRange(min=0)])
     value_per_item = FloatField('Value Per Item', validators=[InputRequired(), NumberRange(min=0)])
-    type = StringField('Category', validators=[InputRequired(), Length(min=1, max=50)]) 
+    type = SelectField('Type', choices=[('School Supplies'), ('Bedroom Items'), ('Kitchen'), ('Decor'), ('Bathroom Items'), ('Electronics'), ('Miscellaneous')], default='Kitchen')
     barcode = StringField('Barcode', validators=[Length(max=50)])
     submit = SubmitField('Add Item')
