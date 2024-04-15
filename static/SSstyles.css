@@ -21,7 +21,7 @@ body {
 
 .navbar .navbar-brand,
 .navbar .nav-link {
-    color: #f5c445 !important; /* Gold/yellow text color */
+    color: #001489 !important; /* Dark blue text color */
 }
 
 .navbar .nav-link {
@@ -30,21 +30,38 @@ body {
 
 .navbar .nav-link:hover,
 .navbar .navbar-brand:hover {
-    color: #fff !important; /* Slightly lighter color on hover */
+    color: #fff !important; /* Gold/yellow color on hover */
 }
 
 /* Adapted dropdown styles for Bootstrap 5 */
 .navbar .dropdown-menu {
-    background-color: #001489;
+    background-color: #f5c445; /* Gold/yellow background color */
 }
 
 .navbar .dropdown-item {
-    color: #f5c445 !important;
+    color: #001489 !important; /* Dark blue text color */
 }
 
 .navbar .dropdown-item:hover {
-    background-color: #f5c445;
-    color: #001489 !important;
+    background-color: #001489; /* Dark blue background color on hover */
+    color: #f5c445 !important; /* Gold/yellow text color on hover */
+}
+
+.btn-navbar-primary {
+    background-color: #001489; /* Dark blue background color */
+    border-color: #001489; /* Match the border with the background color */
+    color: #f5c445; /* Gold/yellow text color to contrast the dark blue background */
+}
+
+.btn-navbar-primary:hover {
+    background-color: #001489; /* Gold/yellow background color on hover */
+    border-color: #f5c445; /* Match the border with the background color on hover */
+    color: #fff; /* Change text color to white on hover */
+}
+
+.btn-navbar-primary:hover {
+    background-color: #001489; /* Gold/yellow background color on hover */
+    border-color: #f5c445; /* Match the border with the background color on hover */
 }
 
 /* Button Styles - Ensuring compatibility with Bootstrap 5 */

@@ -63,7 +63,7 @@
                 <tr>
                     <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(2)">Weight (lb) <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(2)">Weight (kg) <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Stock</th>
                     <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
@@ -137,91 +137,115 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 document.getElementById('addItemSwapShopBtn').addEventListener('click', function() {
-Swal.fire({
-title: 'Add New Item to Swap Shop',
-html: `
-    <style>
-    .swal2-input, .swal2-select { 
-        margin: 0.5em 0; 
-        padding: 10px; 
-        width: 100%; 
-        box-sizing: border-box; 
-        border-radius: 4px; 
-        border: 1px solid #d1d3d4; 
-    }
-    .swal2-select::placeholder {
-        color: #aaa;
-    }
-    .swal2-select option {
-        color: black;
-    }
-    .swal2-select option[disabled] {
-        color: #e4e4e4;
-    }
-    </style>
-    <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
-    <input type="text" id="material" class="swal2-input" placeholder="Material">
-    <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
-    <input type="number" id="stock" class="swal2-input" placeholder="Stock" required min="0">
-    <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
-    <select id="type" class="swal2-input swal2-select">
-    <option value="" disabled selected hidden>Select Type</option>
-    <option value="School Supplies">School Supplies</option>
-    <option value="Bedroom Items">Bedroom Items</option>
-    <option value="Kitchen">Kitchen</option>
-    <option value="Decor">Decor</option>
-    <option value="Bathroom Items">Bathroom Items</option>
-    <option value="Electronics">Electronics</option>
-    <option value="Miscellaneous">Miscellaneous</option>
-    </select>
+  Swal.fire({
+    title: 'Add New Item to Swap Shop',
+    html: `
+      <style>
+        .swal2-input, .swal2-select {
+          margin: 0.5em 0;
+          padding: 10px;
+          width: 100%;
+          box-sizing: border-box;
+          border-radius: 4px;
+          border: 1px solid #d1d3d4;
+        }
+        .swal2-select::placeholder {
+          color: #aaa;
+        }
+        .swal2-select option {
+          color: black;
+        }
+        .swal2-select option[disabled] {
+          color: #e4e4e4;
+        }
+      </style>
+      <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
+      <input type="text" id="material" class="swal2-input" placeholder="Material">
+      <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
+      <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
+      <select id="type" class="swal2-input swal2-select">
+        <option value="" disabled selected hidden>Select Type</option>
+        <option value="School Supplies">School Supplies</option>
+        <option value="Bedroom Items">Bedroom Items</option>
+        <option value="Kitchen">Kitchen</option>
+        <option value="Decor">Decor</option>
+        <option value="Bathroom Items">Bathroom Items</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Miscellaneous">Miscellaneous</option>
+      </select>
     `,
     focusConfirm: false,
     preConfirm: () => {
-    return {
+      if (document.getElementById('type').value === "") {
+        Swal.showValidationMessage("Please select an item type");
+        return false;
+      }
+      return {
         item_name: document.getElementById('item_name').value,
         material: document.getElementById('material').value,
         weight: parseFloat(document.getElementById('weight').value),
-        stock: parseInt(document.getElementById('stock').value),
+        stock: 0, // Set the stock to 0
         value_per_item: parseFloat(document.getElementById('value_per_item').value),
         type: document.getElementById('type').value
-    };
+      };
     },
     showCancelButton: true,
     confirmButtonText: 'Add Item',
     confirmButtonColor: '#001489',
     showLoaderOnConfirm: true
-}).then((result) => {
+  }).then((result) => {
     if (result.isConfirmed) {
-    fetch('/add_item_swap_shop', {
+      fetch('/add_item_swap_shop', {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(result.value)
-    })
-    .then(response => {
+      })
+      .then(response => {
         if (!response.ok) {
-        throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok');
         }
         return response.json();
-    })
-    .then(data => {
+      })
+      .then(data => {
         if (data.success) {
-        Swal.fire('Success!', data.message, 'success').then(result => {
-            if (result.isConfirmed) {
-            location.reload();
-            }
-        });
+          console.log('Item added successfully'); // Debug statement
+
+          // Create a new table row for the newly added item
+          const newRow = document.createElement('tr');
+          newRow.id = `item_${data.item.id}`;
+          newRow.innerHTML = `
+            <td>${data.item.item_name}</td>
+            <td>${data.item.material || ''}</td>
+            <td>${data.item.weight || ''}</td>
+            <td>${data.item.type || ''}</td>
+            <td><input type="number" id="quantity_${data.item.id}" value="${data.item.stock}" class="form-control"></td>
+            <td>${data.item.value_per_item || ''}</td>
+            <td>
+                <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+                <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                <button onclick="printBarcode('${item.barcode}', '${item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+            </td>
+          `;
+
+          // Append the new row to the inventory table body
+        const inventoryBody = document.getElementById('inventoryBody');
+        inventoryBody.appendChild(newRow);
+
+          console.log('Launching updateQuantity modal'); // Debug statement
+          updateQuantity(data.item_id);
         } else {
-        Swal.fire('Error!', data.message, 'error');
+          Swal.fire('Error!', data.message, 'error');
         }
-    })
-    .catch(error => {
+      })
+      .catch(error => {
         console.error('Fetch error:', error);
         Swal.fire('Error!', 'There was a problem with your fetch operation.', 'error');
-    });
+      });
     }
-});
+  });
 });
 
 
@@ -280,7 +304,7 @@ function fetchInventory() {
                     <td>
                         <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
                         <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
-                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                        <button onclick="printBarcode('${item.barcode}', '${item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
                         <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
@@ -290,7 +314,7 @@ function fetchInventory() {
         .catch(error => console.error('Error:', error));
 }
 
-function printBarcode(barcode) {
+function printBarcode(barcode, itemName) {
     if (barcode !== null) {
         const barcodeImage = new Image();
 
@@ -302,7 +326,19 @@ function printBarcode(barcode) {
 
         const printWindow = window.open('', '_blank');
 
-        printWindow.document.body.appendChild(barcodeImage);
+        const container = document.createElement('div');
+        container.style.display = 'inline-block';
+        container.style.textAlign = 'center';
+
+        const itemNameElement = document.createElement('div');
+        itemNameElement.textContent = itemName;
+        itemNameElement.style.fontSize = '16px';
+        itemNameElement.style.marginBottom = '5px';
+
+        container.appendChild(itemNameElement);
+        container.appendChild(barcodeImage);
+
+        printWindow.document.body.appendChild(container);
 
         printWindow.print();
     } else {

@@ -46,7 +46,21 @@ def add_item():
 
             db.session.add(new_item)
             db.session.commit()
-            return jsonify({'success': True, 'message': 'Item added successfully'})
+            return jsonify({
+            'success': True,
+            'message': 'Item added successfully',
+            'item_id': new_item.id,
+            'item': {
+                'id': new_item.id,
+                'item_name': new_item.item_name,
+                'material': new_item.material,
+                'weight': new_item.weight,
+                'stock': new_item.stock,
+                'type': new_item.type,
+                'value_per_item': new_item.value_per_item,
+                'barcode': new_item.barcode
+            }
+        })
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'message': f'Error adding item: {str(e)}'})
@@ -615,7 +629,21 @@ def add_item_swap_shop():
                                          stock=stock, value_per_item=value_per_item, barcode=barcode, type=type)
             db.session.add(new_item)
             db.session.commit()
-            return jsonify({'success': True, 'message': 'Item added successfully to Swap Shop'})
+            return jsonify({
+                'success': True,
+                'message': 'Item added successfully to Swap Shop',
+                'item_id': new_item.id,
+                'item': {
+                    'id': new_item.id,
+                    'item_name': new_item.item_name,
+                    'material': new_item.material,
+                    'weight': new_item.weight,
+                    'stock': new_item.stock,
+                    'value_per_item': new_item.value_per_item,
+                    'barcode': new_item.barcode,
+                    'type': new_item.type
+                }
+            })
         except Exception as e:
             db.session.rollback()
             return jsonify({'success': False, 'message': f'Error adding item to Swap Shop: {str(e)}'})
