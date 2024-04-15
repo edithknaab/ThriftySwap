@@ -28,31 +28,61 @@ def home():
 @app.route('/add_item', methods=['GET', 'POST'])
 @login_required
 def add_item():
-    form = ItemForm()
-    if form.validate_on_submit():
-        item_name = form.item_name.data
-        material = form.material.data
-        weight = form.weight.data
-        stock = form.stock.data
-        value_per_item = form.value_per_item.data
-        type = form.type.data
-        
+    if request.method == 'POST' and request.is_json:
+        #handle JSON data
+        data = request.get_json()
+        item_name = data.get('item_name')
+        material = data.get('material')
+        weight = data.get('weight')
+        stock = data.get('stock')
+        value_per_item = data.get('value_per_item')
+        type = data.get('type')
+
         try:
-            # Generate a random barcode number (replace this with your barcode generation logic)
+            #existing logic for creating inventory object
             barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            
-            # Create a new inventory object with the generated barcode
-            new_item = Inventory(item_name=item_name, material=material, weight=weight, stock=stock, 
-                                 value_per_item=value_per_item, barcode=barcode,type=type)
-            
+            new_item = Inventory(item_name=item_name, material=material, weight=weight,
+                                 stock=stock, value_per_item=value_per_item, barcode=barcode, type=type)
+
             db.session.add(new_item)
             db.session.commit()
-            flash('Item added successfully', 'success')
-            return redirect(url_for('dashboard'))
+            return jsonify({
+            'success': True,
+            'message': 'Item added successfully',
+            'item_id': new_item.id,
+            'item': {
+                'id': new_item.id,
+                'item_name': new_item.item_name,
+                'material': new_item.material,
+                'weight': new_item.weight,
+                'stock': new_item.stock,
+                'type': new_item.type,
+                'value_per_item': new_item.value_per_item,
+                'barcode': new_item.barcode
+            }
+        })
         except Exception as e:
             db.session.rollback()
-            flash(f'Error adding item: {str(e)}', 'error')
-            return redirect(url_for('add_item'))
+            return jsonify({'success': False, 'message': f'Error adding item: {str(e)}'})
+
+    else:
+        #existing logic for form submit
+        form = ItemForm()
+        if form.validate_on_submit():
+            try:
+                barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                new_item = Inventory(item_name=form.item_name.data, material=form.material.data,
+                                     weight=form.weight.data, stock=form.stock.data,
+                                     value_per_item=form.value_per_item.data, barcode=barcode, type=form.type.data)
+
+                db.session.add(new_item)
+                db.session.commit()
+                flash('Item added successfully', 'success')
+                return redirect(url_for('dashboard'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error adding item: {str(e)}', 'error')
+                return redirect(url_for('add_item'))
 
     return render_template('add_item.html', form=form)
 
@@ -583,29 +613,61 @@ def swap_shop_dashboard():
 @app.route('/add_item_swap_shop', methods=['GET', 'POST'])
 @login_required
 def add_item_swap_shop():
-    form = SSItemForm()
-    if form.validate_on_submit():
-        item_name = form.item_name.data
-        material = form.material.data
-        weight = form.weight.data
-        type = form.type.data
-        stock = form.stock.data
-        value_per_item = form.value_per_item.data
+    if request.method == 'POST' and request.is_json:
+        # Process JSON request
+        data = request.get_json()
+        item_name = data.get('item_name')
+        material = data.get('material')
+        weight = data.get('weight')
+        type = data.get('type')
+        stock = data.get('stock')
+        value_per_item = data.get('value_per_item')
+
         try:
-            # Generate a random barcode number 
             barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            
-            new_item = SwapShopInventory(item_name=item_name, material=material, weight=weight, 
-                                         stock=stock, value_per_item=value_per_item, barcode=barcode,type=type)
+            new_item = SwapShopInventory(item_name=item_name, material=material, weight=weight,
+                                         stock=stock, value_per_item=value_per_item, barcode=barcode, type=type)
             db.session.add(new_item)
             db.session.commit()
-            flash('Item added successfully', 'success')
-            return redirect(url_for('swap_shop_dashboard'))  
+            return jsonify({
+                'success': True,
+                'message': 'Item added successfully to Swap Shop',
+                'item_id': new_item.id,
+                'item': {
+                    'id': new_item.id,
+                    'item_name': new_item.item_name,
+                    'material': new_item.material,
+                    'weight': new_item.weight,
+                    'stock': new_item.stock,
+                    'value_per_item': new_item.value_per_item,
+                    'barcode': new_item.barcode,
+                    'type': new_item.type
+                }
+            })
         except Exception as e:
             db.session.rollback()
-            flash(f'Error adding item: {str(e)}', 'error')
-            return redirect(url_for('add_item_swap_shop'))
-    return render_template('add_item_swap_shop.html', form=form)
+            return jsonify({'success': False, 'message': f'Error adding item to Swap Shop: {str(e)}'})
+
+    else:
+        # Handle form submission
+        form = SSItemForm()
+        if form.validate_on_submit():
+            try:
+                barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+                new_item = SwapShopInventory(item_name=form.item_name.data, material=form.material.data,
+                                             weight=form.weight.data, stock=form.stock.data,
+                                             value_per_item=form.value_per_item.data, barcode=barcode, type=form.type.data)
+
+                db.session.add(new_item)
+                db.session.commit()
+                flash('Item added successfully to Swap Shop', 'success')
+                return redirect(url_for('swap_shop_dashboard'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error adding item to Swap Shop: {str(e)}', 'error')
+                return redirect(url_for('add_item_swap_shop'))
+
+        return render_template('add_item_swap_shop.html', form=form)
 
 
 @app.route('/get_swap_shop_inventory', methods=['GET'])
