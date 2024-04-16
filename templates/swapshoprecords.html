@@ -57,11 +57,8 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <input type="text" class="form-control me-2" id="intake-search-filter" onkeyup="searchIntakeTable()" placeholder="Search by 'Item' or 'Donor'..." style="flex-grow: 0; flex-shrink: 1; max-width: 300px;">
             <div class="ms-auto d-flex align-items-center">
-                <label for="intake-date-filter-start" class="form-label me-2">Filter by Date:</label>
-                <input type="date" class="form-control me-2" id="intake-date-filter-start" onchange="filterIntakeByDate(); toggleClearIntakeDates();" style="width: auto;">
-                <label for="intake-date-filter-end" class="form-label me-2">:</label> 
-                <input type="date" class="form-control me-2" id="intake-date-filter-end" onchange="filterIntakeByDate(); toggleClearIntakeDates();" style="width: auto;">
-                <button class="btn btn-primary me-2" id="clear-date-button" style="display: none;" onclick="clearIntakeDates()">Clear Date</button>
+                <label for="intake-date-filter" class="form-label me-2">Filter by Date:</label>
+                <input type="date" class="form-control me-2" id="intake-date-filter" onchange="filterIntakeByDate()" style="width: auto;">
                 <button class="btn btn-primary" onclick="printIntakeTable()">Print</button>
             </div>
         </div>        
@@ -83,7 +80,7 @@
                     <tr>
                         <td>{{ intake_transaction.swap_shop_inventory.item_name }}</td>
                         <td>{{ intake_transaction.quantity }}</td>
-                        <td data-timestamp="{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}">
+                        <td>
                             <script>
                                 var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
                                 var timestamp = new Date(timestampString);
@@ -91,7 +88,7 @@
                                 var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
                                 document.write(easternDate + " " + easternTime);
                             </script>
-                        </td>         
+                        </td>           
                         <td>
                             {{ intake_transaction.donor_info }}
                             <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ intake_transaction.id }}', 'intake')">   
@@ -113,11 +110,8 @@
             <input type="text" class="form-control" id="outtake-search-filter" placeholder="Search by 'Item' or 'Recipient'..." style="flex-grow: 0; flex-shrink: 1; max-width: 300px;">
         
             <div class="ms-auto d-flex align-items-center">
-                <label for="outtake-date-filter-start" class="form-label me-2">Filter by Date:</label>
-                <input type="date" class="form-control me-2" id="outtake-date-filter-start" onchange="filterOuttakeByDate(); toggleClearOuttakeDates();" style="width: auto;">
-                <label for="outtake-date-filter-end" class="form-label me-2">:</label> 
-                <input type="date" class="form-control me-2" id="outtake-date-filter-end" onchange="filterOuttakeByDate(); toggleClearOuttakeDates();" style="width: auto;">
-                <button class="btn btn-primary me-2" id="clear-date-button-outtake" style="display: none;" onclick="clearOuttakeDates()">Clear Date</button>
+                <label for="outtake-date-filter" class="form-label me-2">Filter by Date:</label>
+                <input type="date" class="form-control me-2" id="outtake-date-filter" onchange="filterOuttakeByDate()" style="width: auto;">
                 <button class="btn btn-primary" onclick="printOuttakeTable()">Print</button>
             </div>
         </div>
@@ -138,7 +132,7 @@
                 <tr>
                     <td>{{ outtake_transaction.swap_shop_inventory.item_name }}</td> 
                     <td>{{ outtake_transaction.quantity }}</td>
-                    <td data-timestamp="{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}">
+                    <td>
                         <script>
                             var timestampString = "{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
                             var timestamp = new Date(timestampString);
@@ -195,6 +189,7 @@ function editTransaction(transactionId, type) {
                 console.error('Error:', error);
             });
         }
+
 function toggleReport() {
         var reportType = document.getElementById("report-type").value;
 
@@ -218,33 +213,17 @@ function toggleReport() {
     }
 
 function filterIntakeByDate() {
-    var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
-    inputStart = document.getElementById("intake-date-filter-start");
-    inputEnd = document.getElementById("intake-date-filter-end");
-    filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00Z') : null;
-    filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59.999Z') : (filterStart ? new Date(filterStart.getTime() + 24*60*60*1000) : null);
-
-    // Convert the start and end dates to the "America/New_York" timezone
-    if (filterStart) {
-        filterStart = new Date(filterStart.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    }
-    if (filterEnd) {
-        filterEnd = new Date(filterEnd.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    }
-
-    // Log the start and end dates to the console
-    console.log('Start date:', filterStart);
-    console.log('End date:', filterEnd);
-
+    var input, filter, table, tr, td, i;
+    input = document.getElementById("intake-date-filter");
+    filter = input.value;
     table = document.getElementById("intake-table");
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
         var timestamp_td = tr[i].getElementsByTagName("td")[2]; // Index 2 for timestamp
         if (timestamp_td) {
-            var timestamp_text = timestamp_td.dataset.timestamp;
-            var timestamp = new Date(timestamp_text);
-            if ((filterStart === null && filterEnd === null) || (timestamp >= filterStart && timestamp <= filterEnd)) {
+            var timestamp_text = timestamp_td.textContent || timestamp_td.innerText;
+            if (timestamp_text.includes(filter)) {
                 tr[i].style.display = "";
                 filteredRows.push(tr[i]);
             } else {
@@ -256,33 +235,17 @@ function filterIntakeByDate() {
 }
 
 function filterOuttakeByDate() {
-    var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
-    inputStart = document.getElementById("outtake-date-filter-start");
-    inputEnd = document.getElementById("outtake-date-filter-end");
-    filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00Z') : null;
-    filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59.999Z') : (filterStart ? new Date(filterStart.getTime() + 24*60*60*1000) : null);
-
-    // Convert the start and end dates to the "America/New_York" timezone
-    if (filterStart) {
-        filterStart = new Date(filterStart.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    }
-    if (filterEnd) {
-        filterEnd = new Date(filterEnd.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    }
-
-    // Log the start and end dates to the console
-    console.log('Start date:', filterStart);
-    console.log('End date:', filterEnd);
-
+    var input, filter, table, tr, td, i;
+    input = document.getElementById("outtake-date-filter");
+    filter = input.value;
     table = document.getElementById("outtake-table");
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[2]; // Index 2 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[2]; 
         if (timestamp_td) {
-            var timestamp_text = timestamp_td.dataset.timestamp;
-            var timestamp = new Date(timestamp_text);
-            if ((filterStart === null && filterEnd === null) || (timestamp >= filterStart && timestamp <= filterEnd)) {
+            var timestamp_text = timestamp_td.textContent || timestamp_td.innerText;
+            if (timestamp_text.includes(filter)) {
                 tr[i].style.display = "";
                 filteredRows.push(tr[i]);
             } else {
@@ -290,7 +253,7 @@ function filterOuttakeByDate() {
             }
         }
     }
-    calculateOuttakeTotal(filteredRows); //recalculate the total after filtering
+    calculateOuttakeTotal(filteredRows); 
 }
 
 function searchIntakeTable() {
@@ -363,8 +326,6 @@ window.onload = function() {
         toggleReport(); 
         filterIntakeByDate();
         filterOuttakeByDate();
-        toggleClearIntakeDates();
-        toggleClearOuttakeDates();
     }
 
 document.getElementById("intake-search-filter").addEventListener("input", searchIntakeTable);
@@ -388,43 +349,6 @@ function printOuttakeTable() {
     document.body.innerHTML = originalContents;
 }
 
-function clearIntakeDates() {
-    document.getElementById("intake-date-filter-start").value = "";
-    document.getElementById("intake-date-filter-end").value = "";
-    filterIntakeByDate();
-    toggleClearIntakeDates(); 
-}
-
-function toggleClearIntakeDates() {
-    var startDate = document.getElementById("intake-date-filter-start").value;
-    var endDate = document.getElementById("intake-date-filter-end").value;
-    var clearDateButton = document.getElementById("clear-date-button");
-
-    if (startDate || endDate) {
-        clearDateButton.style.display = "inline-block";
-    } else {
-        clearDateButton.style.display = "none";
-    }
-}
-
-function clearOuttakeDates() {
-    document.getElementById("outtake-date-filter-start").value = "";
-    document.getElementById("outtake-date-filter-end").value = "";
-    filterOuttakeByDate();
-    toggleClearOuttakeDates();
-}
-
-function toggleClearOuttakeDates() {
-    var startDate = document.getElementById("outtake-date-filter-start").value;
-    var endDate = document.getElementById("outtake-date-filter-end").value;
-    var clearDateButton = document.getElementById("clear-date-button-outtake");
-
-    if (startDate || endDate) {
-        clearDateButton.style.display = "inline-block";
-    } else {
-        clearDateButton.style.display = "none";
-    }
-}
 </script>
 </body>
 </html>
