@@ -116,16 +116,7 @@ document.getElementById('addItemBtn').addEventListener('click', function() {
       <input type="text" id="material" class="swal2-input" placeholder="Material">
       <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
       <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
-      <select id="type" class="swal2-input swal2-select">
-        <option value="" disabled selected hidden>Select Type</option>
-        <option value="School Supplies">School Supplies</option>
-        <option value="Bedroom Items">Bedroom Items</option>
-        <option value="Kitchen">Kitchen</option>
-        <option value="Decor">Decor</option>
-        <option value="Bathroom Items">Bathroom Items</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Miscellaneous">Miscellaneous</option>
-      </select>
+      <input type="text" id="type" class="swal2-input" placeholder="Category" required>
     `,
     focusConfirm: false,
     preConfirm: () => {
@@ -161,44 +152,47 @@ document.getElementById('addItemBtn').addEventListener('click', function() {
         }
         return response.json();
       })
-    .then(data => {
-    if (data.success) {
-      console.log('Item added successfully'); // Debug statement
+      .then(data => {
+        if (data.success) {
+          console.log('Item added successfully'); // Debug statement
 
-      // Create a new table row for the newly added item
-      const newRow = document.createElement('tr');
-      newRow.id = `item_${data.item.id}`;
-      newRow.innerHTML = `
-        <td>${data.item.item_name}</td>
-        <td>${data.item.material || ''}</td>
-        <td>${data.item.weight || ''}</td>
-        <td>${data.item.type || ''}</td>
-        <td><input type="number" id="quantity_${data.item.id}" value="${data.item.stock}" class="form-control"></td>
-        <td>${data.item.value_per_item || ''}</td>
-        <td>
-          <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
-          <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
-          <button onclick="printBarcode('${item.barcode}', '${item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
-          <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
-        </td>
-      `;
-      const inventoryBody = document.getElementById('inventoryBody');
-      inventoryBody.appendChild(newRow);
+          // Create a new table row for the newly added item
+          const newRow = document.createElement('tr');
+          newRow.id = `item_${data.item.id}`;
+          newRow.innerHTML = `
+            <td>${data.item.item_name}</td>
+            <td>${data.item.material || ''}</td>
+            <td>${data.item.weight || ''}</td>
+            <td>${data.item.type || ''}</td>
+            <td><input type="number" id="quantity_${data.item.id}" value="${data.item.stock}" class="form-control"></td>
+            <td>${data.item.value_per_item || ''}</td>
+            <td>
+              <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+              <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+              <button onclick="printBarcode('${data.item.barcode}', '${data.item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+              <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+            </td>
+          `;
+          const inventoryBody = document.getElementById('inventoryBody');
+          inventoryBody.appendChild(newRow);
 
-      console.log('Launching updateQuantity modal'); // Debug statement
-      updateQuantity(data.item_id); // Call updateQuantity function with the new item's ID
-    } else {
-      Swal.fire('Error!', data.message, 'error');
-    }
+          console.log('Launching updateQuantity modal'); // Debug statement
+          updateQuantity(data.item.id); 
+          
+          // Display success message after the Swal modal is closed
+          Swal.fire('Success!', 'Item added successfully.', 'success');
+        } else {
+          // Display error message returned from the Flask route
+          Swal.fire('Error!', data.message, 'error');
+        }
       })
       .catch(error => {
         console.error('Fetch error:', error);
-        Swal.fire('Error!', 'There was a problem with your fetch operation.', 'error');
+        Swal.fire('Error!', 'There was a problem.', 'error');
       });
     }
   });
 });
-
 
 function showItemDetails(itemId) {
     fetch(`/get_item_details/${itemId}`)
