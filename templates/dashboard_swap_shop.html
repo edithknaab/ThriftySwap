@@ -16,9 +16,31 @@
         background-color: #001489; 
         color: #ffffff; 
     }
+
+    .sortable-th {
+        cursor: pointer;
+        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    }
+
+    .sortable-th:hover {
+        background-color: #f5c445; /* Slightly darker shade on hover */
+    }
+
+    .sort-icon {
+        font-size: 0.8em;
+        margin-left: 5px;
+    }
+
 </style>
 
-<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory</h2>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; margin-bottom: 0;">Swap Shop Inventory</h2>
+    <div class="mb-3">
+        <button id="addItemSwapShopBtn" class="btn btn-primary">
+            Add New Item <i class="fas fa-plus"></i>
+        </button>
+    </div>
+</div>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
       <span class="close-container"><span class="close">&times;</span></span>
@@ -44,7 +66,7 @@
                     <th class="sortable-th" onclick="sortTable(2)">Weight (kg) <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Stock</th>
-                    <th>Value Per Item</th>
+                    <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -66,16 +88,6 @@
                 </tr>
                 {% endfor %}
             </tbody>
-            <tfoot>
-                <tr id="totalRow">
-                    <td colspan="4" style="text-align: right;"><strong>Total Weight:</strong></td>
-                    <td id="totalWeight" colspan="3"></td>
-                </tr>
-                <tr id="totalValueRow">
-                    <td colspan="4" style="text-align: right;"><strong>Total Value:</strong></td>
-                    <td id="totalValue" colspan="3"></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
 </div>
@@ -279,8 +291,6 @@ function fetchInventory() {
         .then(data => {
             const inventoryBody = document.getElementById('inventoryBody');
             inventoryBody.innerHTML = '';
-            let totalWeight = 0; 
-            let totalValue = 0; 
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
                 row.id = `item_${item.id}`;  
@@ -299,22 +309,7 @@ function fetchInventory() {
                     </td>
                 `;
                 inventoryBody.appendChild(row);
-                
-               
-                const itemStock = parseInt(item.stock);
-                const itemWeight = parseFloat(item.weight);
-                const itemValue = parseFloat(item.value_per_item);
-                totalWeight += (itemWeight * itemStock); 
-                totalValue += (itemValue * itemStock); 
             });
-
-            
-            const totalWeightCell = document.getElementById('totalWeight');
-            totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
-
-            
-            const totalValueCell = document.getElementById('totalValue');
-            totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
         })
         .catch(error => console.error('Error:', error));
 }
@@ -372,12 +367,18 @@ function releaseItem(itemId, itemName) {
                 showCancelButton: true,
                 confirmButtonText: 'Release',
                 showLoaderOnConfirm: true,
-            }).then((donorResult) => {
-                if (donorResult.value) {
+                preConfirm: (recipientValue) => {
+                    if (recipientValue.trim() === '') {
+                        return 'Unknown';
+                    }
+                    return recipientValue.trim();
+                }
+            }).then((recipientResult) => {
+                if (recipientResult.value) {
                     const releaseData = {
                         item_id: itemId, 
                         quantity: parseInt(quantityResult.value), 
-                        donor_info: donorResult.value
+                        recipient_info: recipientResult.value
                     };
                     fetch('/release_item_ss', {
                         method: 'POST',
@@ -405,6 +406,8 @@ function releaseItem(itemId, itemName) {
         }
     });
 }
+
+
 
 function deleteItem(itemId) {
     Swal.fire({
@@ -476,7 +479,7 @@ function updateQuantity(itemId) {
             Swal.fire({
                 title: 'Enter donor information:',
                 input: 'text',
-                inputPlaceholder: 'Enter donor information or select "Unknown"',
+                inputPlaceholder: 'Enter donor or blank for "Unknown"',
                 showCancelButton: true,
                 confirmButtonText: 'Submit',
                 confirmButtonColor: '#001489',
@@ -563,37 +566,73 @@ function scanBarcode() {
     });
 }
 
+function sortTable(columnIndex) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir = "asc", switchcount = 0;
+    table = document.querySelector(".table");
+    switching = true;
+
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[columnIndex];
+            y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+
+            // Determine if we need to parse as float for "Weight" and "Value Per Item" columns
+            let xVal, yVal;
+            if (columnIndex === 2 || columnIndex === 5) { // Numeric sorting for "Weight" and "Value Per Item"
+                xVal = parseFloat(x.innerHTML) || 0;
+                yVal = parseFloat(y.innerHTML) || 0;
+            } else { // Alphabetical sorting for other columns
+                xVal = x.innerHTML.toLowerCase();
+                yVal = y.innerHTML.toLowerCase();
+            }
+
+            // Ascending or descending comparison
+            if (dir == "asc") {
+                if (xVal > yVal) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (dir == "desc") {
+                if (xVal < yVal) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount++;
+        } else {
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            } else if (switchcount !== 0 && dir == "desc") {
+                dir = "asc"; // Reset direction after a full cycle
+            }
+        }
+    }
+}
+
 document.getElementById('searchInput').addEventListener('input', function() {
     const searchTerm = this.value.trim().toLowerCase();
     const tableRows = document.querySelectorAll('#inventoryBody tr');
 
-    let totalWeight = 0; 
-    let totalValue = 0; 
-
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); 
+        
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
             row.style.display = ''; 
-            const itemStock = parseInt(row.querySelector('td:nth-child(5) input').value);
-            const itemWeight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
-            const itemValue = parseFloat(row.querySelector('td:nth-child(6)').textContent);
-            totalWeight += (itemWeight * itemStock); 
-            totalValue += (itemValue * itemStock); 
         } else {
             row.style.display = 'none'; 
         }
     });
-
-    
-    const totalWeightCell = document.getElementById('totalWeight');
-    totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
-
-    
-    const totalValueCell = document.getElementById('totalValue');
-    totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
 });
-
 
 </script>
 {% endblock %}
