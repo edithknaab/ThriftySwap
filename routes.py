@@ -36,13 +36,13 @@ def add_item():
         weight = data.get('weight')
         stock = data.get('stock')
         value_per_item = data.get('value_per_item')
-        type = data.get('type')
+        item_type = data.get('type')
 
         try:
             #existing logic for creating inventory object
             barcode = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
             new_item = Inventory(item_name=item_name, material=material, weight=weight,
-                                 stock=stock, value_per_item=value_per_item, barcode=barcode, type=type)
+                                 stock=stock, value_per_item=value_per_item, barcode=barcode, type=item_type)
 
             db.session.add(new_item)
             db.session.commit()

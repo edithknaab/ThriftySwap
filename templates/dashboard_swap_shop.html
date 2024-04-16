@@ -163,20 +163,11 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
       <input type="text" id="material" class="swal2-input" placeholder="Material">
       <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
       <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
-      <select id="type" class="swal2-input swal2-select">
-        <option value="" disabled selected hidden>Select Type</option>
-        <option value="School Supplies">School Supplies</option>
-        <option value="Bedroom Items">Bedroom Items</option>
-        <option value="Kitchen">Kitchen</option>
-        <option value="Decor">Decor</option>
-        <option value="Bathroom Items">Bathroom Items</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Miscellaneous">Miscellaneous</option>
-      </select>
+      <input type="text" id="type" class="swal2-select" placeholder="Category" required>
     `,
     focusConfirm: false,
     preConfirm: () => {
-      if (document.getElementById('type').value === "") {
+      if(document.getElementById('type').value === "") {
         Swal.showValidationMessage("Please select an item type");
         return false;
       }
@@ -184,7 +175,7 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
         item_name: document.getElementById('item_name').value,
         material: document.getElementById('material').value,
         weight: parseFloat(document.getElementById('weight').value),
-        stock: 0, // Set the stock to 0
+        stock: 0,
         value_per_item: parseFloat(document.getElementById('value_per_item').value),
         type: document.getElementById('type').value
       };
@@ -223,31 +214,33 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
             <td><input type="number" id="quantity_${data.item.id}" value="${data.item.stock}" class="form-control"></td>
             <td>${data.item.value_per_item || ''}</td>
             <td>
-                <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
-                <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
-                <button onclick="printBarcode('${item.barcode}', '${item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
-                <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+              <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+              <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+              <button onclick="printBarcode('${data.item.barcode}', '${data.item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+              <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
             </td>
           `;
-
-          // Append the new row to the inventory table body
-        const inventoryBody = document.getElementById('inventoryBody');
-        inventoryBody.appendChild(newRow);
+          const inventoryBody = document.getElementById('inventoryBody');
+          inventoryBody.appendChild(newRow);
 
           console.log('Launching updateQuantity modal'); // Debug statement
-          updateQuantity(data.item_id);
+          updateQuantity(data.item.id); 
+          
+          // Display success message after the Swal modal is closed
+          console.log('Success! Item added successfully.'); // Debug statement
+          Swal.fire('Success!', 'Item added successfully.', 'success');
         } else {
+          // Display error message returned from the Flask route
           Swal.fire('Error!', data.message, 'error');
         }
       })
       .catch(error => {
         console.error('Fetch error:', error);
-        Swal.fire('Error!', 'There was a problem with your fetch operation.', 'error');
+        Swal.fire('Error!', 'There was a problem.', 'error');
       });
     }
   });
 });
-
 
 
 function showItemDetails(itemId) {
