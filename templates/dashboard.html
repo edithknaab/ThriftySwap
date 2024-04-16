@@ -10,16 +10,36 @@
 
     .table {
         border-radius: 15px;
-        border: 3px solid #001489; 
+        border: 3px solid #001489; /* Thicker border */
     }
 
     .table thead th {
-        background-color: #001489; 
-        color: #ffffff; 
+        background-color: #001489; /* Header background color */
+        color: #ffffff; /* Header text color */
+    }
+    .sortable-th {
+        cursor: pointer;
+        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    }
+
+    .sortable-th:hover {
+        background-color: #f5c445; /* Slightly darker shade on hover */
+    }
+
+    .sort-icon {
+        font-size: 0.8em;
+        margin-left: 5px;
     }
 </style>
 
-<h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Thrifty Owl Inventory</h2>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; margin-bottom: 0;">Thrifty Owl Inventory</h2>
+    <div class="mb-3">
+        <button id="addItemBtn" class="btn btn-primary">
+            Add New Item <i class="fas fa-plus"></i>
+        </button>
+    </div>
+</div>
 <div id="itemDetailsModal" class="modal">
     <div class="modal-content">
         <span class="close-container"><span class="close">&times;</span></span>
@@ -31,8 +51,9 @@
         <p id="itemValue"></p>
     </div>
 </div>
-
+<!-- Inventory window -->
 <div class="inventory-window">
+    <!-- Input fields container -->
     <div>
         <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Category'...">
         <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
@@ -43,27 +64,18 @@
         <table class="table table-bordered table-sm table-hover">
             <thead>
                 <tr>
-                    <th>Item Name</th>
-                    <th>Material</th>
-                    <th>Weight (lb)</th>
-                    <th>Category</th>
+                    <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(2)">Weight (kg) <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Stock</th>
-                    <th>Value Per Item</th>
+                    <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Action</th>
                 </tr>
-            </thead>
+                
+            </thead>            
             <tbody id="inventoryBody">
             </tbody>
-            <tfoot>
-                <tr id="totalRow">
-                    <td colspan="3" style="text-align: right;"><strong>Total Weight:</strong></td>
-                    <td id="totalWeight" colspan="4"></td>
-                </tr>
-                <tr id="totalValueRow" style="display: none;">
-                    <td colspan="3" style="text-align: right;"><strong>Total Value:</strong></td>
-                    <td id="totalValue" colspan="4"></td>
-                </tr>
-            </tfoot>
         </table>
     </div>
 </div>
@@ -76,6 +88,117 @@ document.addEventListener('DOMContentLoaded', function() {
     scanBarcode();
    
 });
+
+document.getElementById('addItemBtn').addEventListener('click', function() {
+  Swal.fire({
+    title: 'Add New Item to Thrifty Owl',
+    html: `
+      <style>
+        .swal2-input, .swal2-select { 
+          margin: 0.5em 0; 
+          padding: 10px; 
+          width: 100%; 
+          box-sizing: border-box; 
+          border-radius: 4px; 
+          border: 1px solid #d1d3d4; 
+        }
+        .swal2-select::placeholder {
+          color: #aaa;
+        }
+        .swal2-select option {
+          color: black;
+        }
+        .swal2-select option[disabled] {
+          color: #e4e4e4;
+        }
+      </style>
+      <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
+      <input type="text" id="material" class="swal2-input" placeholder="Material">
+      <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
+      <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
+      <select id="type" class="swal2-input swal2-select">
+        <option value="" disabled selected hidden>Select Type</option>
+        <option value="School Supplies">School Supplies</option>
+        <option value="Bedroom Items">Bedroom Items</option>
+        <option value="Kitchen">Kitchen</option>
+        <option value="Decor">Decor</option>
+        <option value="Bathroom Items">Bathroom Items</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Miscellaneous">Miscellaneous</option>
+      </select>
+    `,
+    focusConfirm: false,
+    preConfirm: () => {
+      if(document.getElementById('type').value === "") {
+        Swal.showValidationMessage("Please select an item type");
+        return false;
+      }
+      return {
+        item_name: document.getElementById('item_name').value,
+        material: document.getElementById('material').value,
+        weight: parseFloat(document.getElementById('weight').value),
+        stock: 0,
+        value_per_item: parseFloat(document.getElementById('value_per_item').value),
+        type: document.getElementById('type').value
+      };
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Add Item',
+    confirmButtonColor: '#001489',
+    showLoaderOnConfirm: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/add_item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(result.value)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+    .then(data => {
+    if (data.success) {
+      console.log('Item added successfully'); // Debug statement
+
+      // Create a new table row for the newly added item
+      const newRow = document.createElement('tr');
+      newRow.id = `item_${data.item.id}`;
+      newRow.innerHTML = `
+        <td>${data.item.item_name}</td>
+        <td>${data.item.material || ''}</td>
+        <td>${data.item.weight || ''}</td>
+        <td>${data.item.type || ''}</td>
+        <td><input type="number" id="quantity_${data.item.id}" value="${data.item.stock}" class="form-control"></td>
+        <td>${data.item.value_per_item || ''}</td>
+        <td>
+          <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
+          <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+          <button onclick="printBarcode('${item.barcode}', '${item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+          <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+        </td>
+      `;
+      const inventoryBody = document.getElementById('inventoryBody');
+      inventoryBody.appendChild(newRow);
+
+      console.log('Launching updateQuantity modal'); // Debug statement
+      updateQuantity(data.item_id); // Call updateQuantity function with the new item's ID
+    } else {
+      Swal.fire('Error!', data.message, 'error');
+    }
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+        Swal.fire('Error!', 'There was a problem with your fetch operation.', 'error');
+      });
+    }
+  });
+});
+
 
 function showItemDetails(itemId) {
     fetch(`/get_item_details/${itemId}`)
@@ -94,9 +217,9 @@ function showItemDetails(itemId) {
             Swal.fire({
                 title: 'Item Details',
                 html: itemDetailsHtml,
-                showCloseButton: true, 
+                showCloseButton: true, // Allows closing by clicking the "X" button
                 focusConfirm: false,
-                showConfirmButton: false,
+                showConfirmButton: false, // Removes the "Close" button
                 footer: '<button class="btn btn-primary" onclick="updateQuantity(' + itemId + ')" type="button" style="margin-right: 8px;">Add</button>' +
                         '<button class="btn btn-primary" onclick="releaseItem(' + itemId + ',\'' + data.item_name + '\')" type="button">Release</button>',
                 showCancelButton: false,
@@ -104,11 +227,13 @@ function showItemDetails(itemId) {
                     confirmButton: 'btn btn-success',
                 },
                 buttonsStyling: false,
-                allowOutsideClick: true, 
-                allowEscapeKey: true, 
+                allowOutsideClick: true, // Allows closing by clicking outside the modal
+                allowEscapeKey: true, // Allows closing by pressing the ESC key
             });
         });
 }
+
+
 
 function fetchInventory() {
     fetch(`/get_inventory`)
@@ -116,11 +241,9 @@ function fetchInventory() {
         .then(data => {
             const inventoryBody = document.getElementById('inventoryBody');
             inventoryBody.innerHTML = '';
-            let totalWeight = 0; 
-            let totalValue = 0; 
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
-                row.id = `item_${item.id}`;  
+                row.id = `item_${item.id}`;  // Assign an id to the row
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -131,58 +254,15 @@ function fetchInventory() {
                     <td>
                         <button onclick="releaseItem(${item.id}, '${item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
                         <button onclick="updateQuantity(${item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
-                        <button onclick="printBarcode('${item.barcode}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
+                        <button onclick="printBarcode('${item.barcode}', '${item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
                         <button onclick="deleteItem(${item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 inventoryBody.appendChild(row);
-                totalWeight += item.weight * item.stock; 
-                totalValue += item.value_per_item * item.stock; 
             });
-
-            
-            const totalWeightCell = document.getElementById('totalWeight');
-            totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
-
-            
-            const totalValueRow = document.getElementById('totalValueRow');
-            const totalValueCell = document.getElementById('totalValue');
-            totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
-            totalValueRow.style.display = ''; 
         })
         .catch(error => console.error('Error:', error));
 }
-
-document.getElementById('searchInput').addEventListener('input', function() {
-    const searchTerm = this.value.trim().toLowerCase();
-    const tableRows = document.querySelectorAll('#inventoryBody tr');
-
-    let totalWeight = 0; 
-    let totalValue = 0; 
-
-    tableRows.forEach(row => {
-        const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
-        if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
-            row.style.display = ''; 
-            const itemStock = parseInt(row.querySelector('td:nth-child(5) input').value);
-            const itemWeight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
-            const itemValue = parseFloat(row.querySelector('td:nth-child(6)').textContent);
-            totalWeight += (itemWeight * itemStock); 
-            totalValue += (itemValue * itemStock); 
-        } else {
-            row.style.display = 'none';
-        }
-    });
-
-    
-    const totalWeightCell = document.getElementById('totalWeight');
-    totalWeightCell.textContent = `${totalWeight.toFixed(2)} lb`;
-
-    const totalValueCell = document.getElementById('totalValue');
-    totalValueCell.textContent = `$${totalValue.toFixed(2)}`;
-});
-
 
 function updateQuantity(itemId) {
     // Start with quantity input
@@ -199,14 +279,14 @@ function updateQuantity(itemId) {
         confirmButtonColor: '#001489',
         showLoaderOnConfirm: true,
     }).then((quantityResult) => {
-        
+        // Check if the dialog was dismissed (e.g., by pressing "Cancel")
         if (quantityResult.dismiss) {
-            
+            // If dismissed, just return and do nothing
             return;
         }
         
         if (quantityResult.isConfirmed && quantityResult.value) {
-            
+            // Then ask for donor information
             Swal.fire({
                 title: 'Enter donor information:',
                 input: 'text',
@@ -214,56 +294,52 @@ function updateQuantity(itemId) {
                 confirmButtonText: 'Submit',
                 confirmButtonColor: '#001489',
                 showLoaderOnConfirm: true,
-            }).then((donorResult) => {
-                
-                if (donorResult.dismiss) {
-                    
-                    return;
+                preConfirm: (donorValue) => {
+                    if (donorValue.trim() === '') {
+                        return 'Unknown';
+                    }
+                    return donorValue.trim();
                 }
+            }).then((donorResult) => {
+                // Proceed with the update quantity logic
+                const quantityToAdd = parseInt(quantityResult.value);
+                const newQuantity = parseInt(document.getElementById(`quantity_${itemId}`).value) + quantityToAdd;
+                const donorInfo = donorResult.value;
 
-                if (donorResult.isConfirmed && donorResult.value.trim() !== '') {
-                    
-                    const quantityToAdd = parseInt(quantityResult.value);
-                    const newQuantity = parseInt(document.getElementById(`quantity_${itemId}`).value) + quantityToAdd;
+                fetch('/update_quantity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorInfo }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
+                        document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
 
-                    fetch('/update_quantity', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id: itemId, quantity_to_add: quantityToAdd, donor_info: donorResult.value }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
-                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Updated!',
-                                text: data.message,
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: data.message,
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: data.message,
+                        });
+                    } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            text: 'Something went wrong!',
+                            text: data.message,
                         });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
                     });
-                }
-                else if (donorResult.isConfirmed) {
-                    Swal.fire('Please enter donor information or select "Unknown".');
-                }
+                });
             });
         }
         else if (quantityResult.isConfirmed) {
@@ -275,7 +351,9 @@ function updateQuantity(itemId) {
 
 
 
-function printBarcode(barcode) {
+
+
+function printBarcode(barcode, itemName) {
     if (barcode !== null) {
         const barcodeImage = new Image();
 
@@ -287,7 +365,19 @@ function printBarcode(barcode) {
 
         const printWindow = window.open('', '_blank');
 
-        printWindow.document.body.appendChild(barcodeImage);
+        const container = document.createElement('div');
+        container.style.display = 'inline-block';
+        container.style.textAlign = 'center';
+
+        const itemNameElement = document.createElement('div');
+        itemNameElement.textContent = itemName;
+        itemNameElement.style.fontSize = '16px';
+        itemNameElement.style.marginBottom = '5px';
+
+        container.appendChild(itemNameElement);
+        container.appendChild(barcodeImage);
+
+        printWindow.document.body.appendChild(container);
 
         printWindow.print();
     } else {
@@ -366,46 +456,47 @@ function releaseItem(itemId, itemName) {
     }).then((quantityResult) => {
         if (quantityResult.value) {
             Swal.fire({
-                title: 'Enter recipient information:',
+                title: 'Enter recipient or blank for "Unknown":',
                 input: 'text',
                 showCancelButton: true,
                 confirmButtonText: 'Release',
                 showLoaderOnConfirm: true,
             }).then((donorResult) => {
-                if (donorResult.value) {
-                    const releaseData = {
-                        item_name: itemName, 
-                        item_id: itemId, 
-                        quantity: parseInt(quantityResult.value), 
-                        donor_info: donorResult.value
-                    };
-                    //endpoint match
-                    fetch('/release_item', { 
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(releaseData),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            let quantityInput = document.getElementById(`quantity_${itemId}`);
-                            let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
-                            quantityInput.value = newQuantity; 
-                            document.getElementById('itemStock').innerText = "Stock: " + newQuantity; 
-                            Swal.fire('Released!', data.message, 'success');
-                        } else {
-                            Swal.fire('Oops...', data.message, 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire('Oops...', 'Something went wrong!', 'error');
-                    });
-                }
+                const recipientInfo = donorResult.value ? donorResult.value : "Unknown";
+
+                const releaseData = {
+                    item_name: itemName, 
+                    item_id: itemId, 
+                    quantity: parseInt(quantityResult.value), 
+                    donor_info: recipientInfo
+                };
+
+                fetch('/release_item', { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(releaseData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let quantityInput = document.getElementById(`quantity_${itemId}`);
+                        let newQuantity = parseInt(quantityInput.value) - parseInt(quantityResult.value);
+                        quantityInput.value = newQuantity;
+                        document.getElementById('itemStock').innerText = "Stock: " + newQuantity;
+                        Swal.fire('Released!', data.message, 'success');
+                    } else {
+                        Swal.fire('Oops...', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Oops...', 'Something went wrong!', 'error');
+                });
             });
         }
     });
 }
+
 
 
 function scanBarcode() {
@@ -427,9 +518,9 @@ function scanBarcode() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data); 
+                console.log(data); // Log the server response
                 if (data.success) {
-                    
+                    // Call the showItemDetails function with the item id
                     showItemDetails(data.itemId);
                 } else {
                     alert(`Item not found: ${scannedBarcode}. ${data.message}`);
@@ -437,11 +528,63 @@ function scanBarcode() {
             })
             .catch(error => console.error('Error:', error));
 
-            
+            // Clear the input field and scannedBarcode variable
             scannedBarcode = '';
             inputField.value = '';
-        }, 500); 
+        }, 500); // Wait for 500ms after the last input to send the barcode
     });
+}
+
+function sortTable(columnIndex) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir = "asc", switchcount = 0;
+    table = document.querySelector(".table");
+    switching = true;
+
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[columnIndex];
+            y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+
+            // Determine if we need to parse as float for "Weight" and "Value Per Item" columns
+            let xVal, yVal;
+            if (columnIndex === 2 || columnIndex === 5) { // Numeric sorting for "Weight" and "Value Per Item"
+                xVal = parseFloat(x.innerHTML) || 0;
+                yVal = parseFloat(y.innerHTML) || 0;
+            } else { // Alphabetical sorting for other columns
+                xVal = x.innerHTML.toLowerCase();
+                yVal = y.innerHTML.toLowerCase();
+            }
+
+            // Ascending or descending comparison
+            if (dir == "asc") {
+                if (xVal > yVal) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (dir == "desc") {
+                if (xVal < yVal) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount++;
+        } else {
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            } else if (switchcount !== 0 && dir == "desc") {
+                dir = "asc"; // Reset direction after a full cycle
+            }
+        }
+    }
 }
 
 document.getElementById('searchInput').addEventListener('input', function() {
@@ -452,9 +595,9 @@ document.getElementById('searchInput').addEventListener('input', function() {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
         const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
-            row.style.display = ''; 
+            row.style.display = ''; // Show the row if item name or type matches search term
         } else {
-            row.style.display = 'none'; 
+            row.style.display = 'none'; // Hide the row if item name or type doesn't match search term
         }
     });
 });
