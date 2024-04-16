@@ -84,7 +84,7 @@ def add_item():
                 flash(f'Error adding item: {str(e)}', 'error')
                 return redirect(url_for('add_item'))
 
-        return render_template('add_item.html', form=form)
+    return render_template('add_item.html', form=form)
 
 @app.route('/delete_item', methods=['POST'])
 def delete_item():
@@ -668,7 +668,6 @@ def add_item_swap_shop():
                 return redirect(url_for('add_item_swap_shop'))
 
         return render_template('add_item_swap_shop.html', form=form)
-
 
 
 @app.route('/get_swap_shop_inventory', methods=['GET'])
