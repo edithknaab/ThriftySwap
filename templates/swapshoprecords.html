@@ -75,7 +75,6 @@
                         <th>Donor Information</th>
                         <th>Value Per Item</th>
                         <th> Weight </th>
-                        <th>Total Value</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -94,7 +93,6 @@
                         </td>
                         <td>{{ intake_transaction.swap_shop_inventory.value_per_item }}</td>
                         <td>{{ intake_transaction.swap_shop_inventory.weight }}</td>
-                        <td>{{ intake_transaction.swap_shop_inventory.value_per_item * intake_transaction.quantity }}</td>
                     </tr>
                     {% endfor %}
                     {% endfor %}
@@ -128,7 +126,7 @@
                     <th>Timestamp</th>
                     <th>Recipient Information</th>
                     <th>Weight</th>
-                    <th>Total Value</th>
+                    <th> Value Per Item </th>
                 </tr>
             </thead>
             <tbody>
@@ -145,7 +143,7 @@
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
                     </td>
                     <td>{{ outtake_transaction.swap_shop_inventory.weight }}</td>
-                    <td>{{ outtake_transaction.swap_shop_inventory.value_per_item * outtake_transaction.quantity }}</td>                 
+                    <td>{{ outtake_transaction.swap_shop_inventory.value_per_item }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -341,9 +339,10 @@ function calculateIntakeTotal(filteredRows) {
     var intakeTotalWeight = 0; // Initialize total weight variable
     for (var i = 0; i < filteredRows.length; i++) {
         var rowCells = filteredRows[i].getElementsByTagName("td");
-        intakeTotal += parseFloat(rowCells[5].innerText); // Assuming the total value is in the 6th column
+        var valuePerItem = parseFloat(rowCells[4].innerText); // Assuming the value per item is in the 5th column
         var quantity = parseFloat(rowCells[1].innerText); // Assuming the quantity is in the 2nd column
-        var weight = parseFloat(rowCells[4].innerText); // Assuming the weight is in the 5th column
+        intakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); // Add total value
+        var weight = parseFloat(rowCells[5].innerText); // Assuming the weight is in the 6th column
         intakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Add weighted quantity to total weight if it's a valid number
     }
     document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
@@ -355,14 +354,16 @@ function calculateOuttakeTotal(filteredRows) {
     var outtakeTotalWeight = 0; // Initialize total weight variable
     for (var j = 0; j < filteredRows.length; j++) {
         var rowCells = filteredRows[j].getElementsByTagName("td");
-        outtakeTotal += parseFloat(rowCells[5].innerText); // Assuming the total value is in the 6th column
+        var valuePerItem = parseFloat(rowCells[5].innerText); // Assuming the value per item is in the 5th column
         var quantity = parseFloat(rowCells[1].innerText); // Assuming the quantity is in the 2nd column
-        var weight = parseFloat(rowCells[4].innerText); // Assuming the weight is in the 5th column
+        outtakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); // Add total value
+        var weight = parseFloat(rowCells[4].innerText); // Assuming the weight is in the 4th column
         outtakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Add weighted quantity to total weight if it's a valid number
     }
     document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
     document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
 }
+
 
 
 

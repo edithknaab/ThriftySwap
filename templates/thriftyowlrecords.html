@@ -242,29 +242,29 @@
         }
 
         function searchOuttakeTable() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("outtake-search-filter");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("outtake-table");
-            tr = table.getElementsByTagName("tr");
-            for (i = 0; i < tr.length; i++) {
-                var itemName_td = tr[i].getElementsByTagName("td")[0]; 
-                var recipientInfo_td = tr[i].getElementsByTagName("td")[4]; 
-                if (itemName_td || recipientInfo_td) {
-                    var itemName_text = itemName_td.textContent || itemName_td.innerText;
-                    var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
-                    if (itemName_text.toUpperCase().indexOf(filter) > -1 || recipientInfo_text.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("outtake-search-filter");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("outtake-table");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+        var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
+        var recipientInfo_td = tr[i].getElementsByTagName("td")[3]; // Index 3 for recipient information
+        if (itemName_td || recipientInfo_td) {
+            var itemName_text = itemName_td.textContent || itemName_td.innerText;
+            var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
+            if (itemName_text.toUpperCase().indexOf(filter) > -1 || recipientInfo_text.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
             }
-            calculateOuttakeTotal(); 
         }
+    }
+    calculateOuttakeTotal(); // Recalculate the total after filtering
+}
 
         
-        function calculateIntakeTotal() {
+function calculateIntakeTotal() {
     var intakeTotal = 0;
     var intakeTotalWeight = 0; // Initialize intakeTotalWeight variable
     var table = document.getElementById("intake-table");
@@ -355,7 +355,7 @@ function filterIntakeByDate() {
             }
         }
 
-        function filterOuttakeByDate() {
+function filterOuttakeByDate() {
     var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
     inputStart = document.getElementById("outtake-date-filter-start");
     inputEnd = document.getElementById("outtake-date-filter-end");
