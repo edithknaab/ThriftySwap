@@ -88,6 +88,15 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Total:</th>
+                    <th id="totalWeight">0</th>
+                    <th colspan="2"></th>
+                    <th id="totalValue">0</th>
+                    <th></th>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
@@ -284,9 +293,11 @@ function fetchInventory() {
         .then(data => {
             const inventoryBody = document.getElementById('inventoryBody');
             inventoryBody.innerHTML = '';
+            let totalWeight = 0;
+            let totalValue = 0;
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
-                row.id = `item_${item.id}`;  
+                row.id = `item_${item.id}`;
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -302,11 +313,18 @@ function fetchInventory() {
                     </td>
                 `;
                 inventoryBody.appendChild(row);
+
+                // Accumulate total weight and total value
+                totalWeight += parseFloat(item.weight);
+                totalValue += parseFloat(item.value_per_item);
             });
+
+            // Update total weight and total value
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+            document.getElementById('totalValue').textContent = totalValue.toFixed(2);
         })
         .catch(error => console.error('Error:', error));
 }
-
 function printBarcode(barcode, itemName) {
     if (barcode !== null) {
         const barcodeImage = new Image();
@@ -617,15 +635,37 @@ document.getElementById('searchInput').addEventListener('input', function() {
 
     tableRows.forEach(row => {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
-        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase(); 
-        
+        const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
+
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
-            row.style.display = ''; 
+            row.style.display = '';
         } else {
-            row.style.display = 'none'; 
+            row.style.display = 'none';
         }
     });
+
+    // Recalculate totals based on filtered table
+    calculateTotals();
 });
 
+
+function calculateTotals() {
+    let totalWeight = 0;
+    let totalValue = 0;
+    const visibleRows = document.querySelectorAll('#inventoryBody tr');
+
+    visibleRows.forEach(row => {
+        if (row.style.display !== 'none') {
+            const weight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
+            const value = parseFloat(row.querySelector('td:nth-child(6)').textContent);
+            totalWeight += isNaN(weight) ? 0 : weight;
+            totalValue += isNaN(value) ? 0 : value;
+        }
+    });
+
+    // Update total weight and total value
+    document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+    document.getElementById('totalValue').textContent = totalValue.toFixed(2);
+}
 </script>
 {% endblock %}
