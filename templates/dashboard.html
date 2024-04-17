@@ -66,7 +66,7 @@
                 <tr>
                     <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(2)">Weight (kg) <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(2)">Weight (lb) <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Stock</th>
                     <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
@@ -123,7 +123,7 @@ document.getElementById('addItemBtn').addEventListener('click', function() {
       </style>
       <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
       <input type="text" id="material" class="swal2-input" placeholder="Material">
-      <input type="number" id="weight" class="swal2-input" placeholder="Weight (kg)" required min="0" step="0.01">
+      <input type="number" id="weight" class="swal2-input" placeholder="Weight (lb)" required min="0" step="0.01">
       <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
       <input type="text" id="type" class="swal2-input" placeholder="Category" required>
     `,
@@ -236,8 +236,6 @@ function showItemDetails(itemId) {
         });
 }
 
-
-
 function fetchInventory() {
     fetch(`/get_inventory`)
         .then(response => response.json())
@@ -264,14 +262,20 @@ function fetchInventory() {
                     </td>
                 `;
                 inventoryBody.appendChild(row);
-                totalWeight += parseFloat(item.weight);
-                totalValue += parseFloat(item.value_per_item);
+                const stock = parseInt(item.stock);
+                if (!isNaN(stock)) {
+                    const weightedWeight = parseFloat(item.weight) * stock;
+                    const weightedValue = parseFloat(item.value_per_item) * stock;
+                    totalWeight += weightedWeight;
+                    totalValue += weightedValue;
+                }
             });
             document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
             document.getElementById('totalValue').textContent = totalValue.toFixed(2);
         })
         .catch(error => console.error('Error:', error));
 }
+
 
 function updateQuantity(itemId) {
     // Start with quantity input
@@ -618,8 +622,13 @@ function calculateTotals() {
         if (row.style.display !== 'none') {
             const weight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
             const value = parseFloat(row.querySelector('td:nth-child(6)').textContent);
-            totalWeight += isNaN(weight) ? 0 : weight;
-            totalValue += isNaN(value) ? 0 : value;
+            const stock = parseInt(row.querySelector('td:nth-child(5) input').value); // Get the stock input value
+            if (!isNaN(weight) && !isNaN(value) && !isNaN(stock)) {
+                const weightedWeight = weight * stock; // Calculate weighted weight
+                const weightedValue = value * stock; // Calculate weighted value
+                totalWeight += weightedWeight; // Accumulate weighted weight
+                totalValue += weightedValue; // Accumulate weighted value
+            }
         }
     });
 
@@ -627,5 +636,6 @@ function calculateTotals() {
     document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
     document.getElementById('totalValue').textContent = totalValue.toFixed(2);
 }
+
 </script>
 {% endblock %}

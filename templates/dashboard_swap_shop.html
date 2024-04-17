@@ -315,8 +315,13 @@ function fetchInventory() {
                 inventoryBody.appendChild(row);
 
                 // Accumulate total weight and total value
-                totalWeight += parseFloat(item.weight);
-                totalValue += parseFloat(item.value_per_item);
+                const stock = parseInt(item.stock);
+                if (!isNaN(stock)) {
+                    const weightedWeight = parseFloat(item.weight) * stock;
+                    const weightedValue = parseFloat(item.value_per_item) * stock;
+                    totalWeight += weightedWeight;
+                    totalValue += weightedValue;
+                }
             });
 
             // Update total weight and total value
@@ -325,6 +330,7 @@ function fetchInventory() {
         })
         .catch(error => console.error('Error:', error));
 }
+
 function printBarcode(barcode, itemName) {
     if (barcode !== null) {
         const barcodeImage = new Image();
@@ -661,8 +667,13 @@ function calculateTotals() {
         if (row.style.display !== 'none') {
             const weight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
             const value = parseFloat(row.querySelector('td:nth-child(6)').textContent);
-            totalWeight += isNaN(weight) ? 0 : weight;
-            totalValue += isNaN(value) ? 0 : value;
+            const stock = parseInt(row.querySelector('td:nth-child(5) input').value); // Get the stock input value
+            if (!isNaN(weight) && !isNaN(value) && !isNaN(stock)) {
+                const weightedWeight = weight * stock; // Calculate weighted weight
+                const weightedValue = value * stock; // Calculate weighted value
+                totalWeight += weightedWeight; // Accumulate weighted weight
+                totalValue += weightedValue; // Accumulate weighted value
+            }
         }
     });
 
