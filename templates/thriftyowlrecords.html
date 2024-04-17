@@ -93,15 +93,10 @@
                     <td>{{ intake_transaction.inventory.material }}</td>
                     <td>{{ intake_transaction.inventory.value_per_item }}</td>
                     <td>{{ intake_transaction.inventory.weight }}</td>
-                    <td data-timestamp="{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}">
-                        <script>
-                            var timestampString = "{{ intake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
-                            var timestamp = new Date(timestampString);
-                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
-                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
-                            document.write(easternDate + " " + easternTime);
-                        </script>
-                    </td>
+                    <td>
+                        {% set timestamp = intake_transaction.timestamp %}
+                        {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
+                    </td>                    
                     <td>{{ intake_transaction.quantity }}</td>
                     <td>
                         {{ intake_transaction.donor_info }}
@@ -158,15 +153,10 @@
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
                     </td>
                     <td>{{ outtake_transaction.inventory.value_per_item }}</td> 
-                    <td data-timestamp="{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}">
-                        <script>
-                            var timestampString = "{{ outtake_transaction.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}";
-                            var timestamp = new Date(timestampString);
-                            var easternTime = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: true });
-                            var easternDate = timestamp.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "long", day: "numeric" });
-                            document.write(easternDate + " " + easternTime);
-                        </script>
-                    </td>                         
+                    <td>
+                        {% set timestamp = outtake_transaction.timestamp %}
+                        {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
+                    </td>                                          
                     <td>{{ outtake_transaction.inventory.value_per_item * outtake_transaction.quantity }}</td> 
                 </tr>
                 {% endfor %}
@@ -424,22 +414,55 @@ function calculateOuttakeTotal() {
                 clearDateButton.style.display = "none";
             }
         }
-
         function printIntakeTable() {
-            var printContents = document.getElementById("intake-report").innerHTML;
-            var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-        }
+    var intakeTable = document.getElementById("intake-table").outerHTML;
+    var intakeTotal = document.getElementById("intake-total").outerHTML; 
+    var intakeTotalWeight = document.getElementById("intake-total-weight").outerHTML;
+    var printContents = intakeTable + intakeTotal + intakeTotalWeight;
 
-        function printOuttakeTable() {
-            var printContents = document.getElementById("outtake-report").innerHTML;
-            var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-        }
+    // Open a new window
+    var printWindow = window.open('', '_blank');
+    printWindow.document.open();
+    printWindow.document.write('<html><head><title>Intake Table Print</title>');
+    printWindow.document.write('<style>@media print {');
+    printWindow.document.write('.table-bordered, .table-bordered th, .table-bordered td { border: 1px solid black !important; }');
+    printWindow.document.write('.table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 0.5rem; }');
+    printWindow.document.write('.table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; color: #212529; }');
+    printWindow.document.write('.table th, .table td { vertical-align: top; border-top: 1px solid black; }');
+    printWindow.document.write('img[src$="/static/images/edit.png"] { display: none; }');
+    printWindow.document.write('}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(printContents);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function printOuttakeTable() {
+    var outtakeTable = document.getElementById("outtake-table").outerHTML;
+    var outtakeTotal = document.getElementById("outtake-total").outerHTML; 
+    var outtakeTotalWeight = document.getElementById("outtake-total-weight").outerHTML;
+    var printContents = outtakeTable + outtakeTotal + outtakeTotalWeight;
+
+    // Open a new window
+    var printWindow = window.open('', '_blank');
+    printWindow.document.open();
+    printWindow.document.write('<html><head><title>Outtake Table Print</title>');
+    printWindow.document.write('<style>@media print {');
+    printWindow.document.write('.table-bordered, .table-bordered th, .table-bordered td { border: 1px solid black !important; }');
+    printWindow.document.write('.table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 0.5rem; }');
+    printWindow.document.write('.table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; color: #212529; }');
+    printWindow.document.write('.table th, .table td { vertical-align: top; border-top: 1px solid black; }');
+    printWindow.document.write('img[src$="/static/images/edit.png"] { display: none; }');
+    printWindow.document.write('}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(printContents);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+
 
         window.onload = function() {
             toggleReport(); 
