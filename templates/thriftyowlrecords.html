@@ -94,9 +94,9 @@
                     <td>{{ intake_transaction.inventory.value_per_item }}</td>
                     <td>{{ intake_transaction.inventory.weight }}</td>
                     <td>
-                        {% set timestamp = intake_transaction.timestamp %}
+                        {% set timestamp = intake_transaction.timestamp - timedelta(hours=4) %}
                         {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
-                    </td>                    
+                    </td>                                          
                     <td>{{ intake_transaction.quantity }}</td>
                     <td>
                         {{ intake_transaction.donor_info }}
@@ -108,6 +108,7 @@
                 {% endfor %}
             </tbody>
         </table>
+
         <div id="intake-total" class="total-value"></div>
         <div id="intake-total-weight" class="total-weight"></div> 
 
@@ -154,7 +155,7 @@
                     </td>
                     <td>{{ outtake_transaction.inventory.value_per_item }}</td> 
                     <td>
-                        {% set timestamp = outtake_transaction.timestamp %}
+                        {% set timestamp = outtake_transaction.timestamp - timedelta(hours=4) %}
                         {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
                     </td>                                          
                     <td>{{ outtake_transaction.inventory.value_per_item * outtake_transaction.quantity }}</td> 
@@ -309,39 +310,34 @@ function calculateOuttakeTotal() {
     document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
 }
 
-        function filterIntakeByDate() {
-            var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
-            inputStart = document.getElementById("intake-date-filter-start");
-            inputEnd = document.getElementById("intake-date-filter-end");
-            filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00Z') : null;
-            filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59.999Z') : (filterStart ? new Date(filterStart.getTime() + 24*60*60*1000) : null);
+function filterIntakeByDate() {
+    var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
+    inputStart = document.getElementById("intake-date-filter-start");
+    inputEnd = document.getElementById("intake-date-filter-end");
+    filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00') : null;
+    filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59') : null;
 
-            // Log the start and end dates to the console
-            console.log('Start date:', filterStart);
-            console.log('End date:', filterEnd);
+    // Log the start and end dates to the console
+    console.log('Start date:', filterStart);
+    console.log('End date:', filterEnd);
 
-            table = document.getElementById("intake-table");
-            tr = table.getElementsByTagName("tr");
-            var filteredRows = [];
-            for (i = 0; i < tr.length; i++) {
-                var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for timestamp
-                if (timestamp_td) {
-                    var timestamp_text = timestamp_td.dataset.timestamp;
-                    var timestamp = new Date(timestamp_text);
-
-                    // Convert the timestamp to the "America/New_York" timezone
-                    var easternTimestamp = new Date(timestamp.toLocaleString("en-US", { timeZone: "America/New_York" }));
-
-                    if ((filterStart === null && filterEnd === null) || (easternTimestamp >= filterStart && easternTimestamp <= filterEnd)) {
-                        tr[i].style.display = "";
-                        filteredRows.push(tr[i]);
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
+    table = document.getElementById("intake-table");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+        var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for timestamp
+        if (timestamp_td) {
+            var timestamp_text = timestamp_td.textContent;
+            var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
+            if ((filterStart === null && filterEnd === null) || (timestamp >= filterStart && timestamp <= filterEnd)) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
             }
-            calculateIntakeTotal(filteredRows); //recalculate the total after filtering
         }
+    }
+    calculateIntakeTotal(); // Recalculate the total after filtering
+}
+
 
         function clearIntakeDates() {
             document.getElementById("intake-date-filter-start").value = "";
@@ -363,38 +359,32 @@ function calculateOuttakeTotal() {
         }
 
         function filterOuttakeByDate() {
-            var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
-            inputStart = document.getElementById("outtake-date-filter-start");
-            inputEnd = document.getElementById("outtake-date-filter-end");
-            filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00Z') : null;
-            filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59.999Z') : (filterStart ? new Date(filterStart.getTime() + 24*60*60*1000) : null);
+    var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
+    inputStart = document.getElementById("outtake-date-filter-start");
+    inputEnd = document.getElementById("outtake-date-filter-end");
+    filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00') : null;
+    filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59') : null;
 
-            // Log the start and end dates to the console
-            console.log('Start date:', filterStart);
-            console.log('End date:', filterEnd);
+    // Log the start and end dates to the console
+    console.log('Start date:', filterStart);
+    console.log('End date:', filterEnd);
 
-            table = document.getElementById("outtake-table");
-            tr = table.getElementsByTagName("tr");
-            var filteredRows = [];
-            for (i = 0; i < tr.length; i++) {
-                var timestamp_td = tr[i].getElementsByTagName("td")[6]; // Index 6 for timestamp
-                if (timestamp_td) {
-                    var timestamp_text = timestamp_td.dataset.timestamp;
-                    var timestamp = new Date(timestamp_text);
-
-                    // Convert the timestamp to the "America/New_York" timezone
-                    var easternTimestamp = new Date(timestamp.toLocaleString("en-US", { timeZone: "America/New_York" }));
-
-                    if ((filterStart === null && filterEnd === null) || (easternTimestamp >= filterStart && easternTimestamp <= filterEnd)) {
-                        tr[i].style.display = "";
-                        filteredRows.push(tr[i]);
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
+    table = document.getElementById("outtake-table");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+        var timestamp_td = tr[i].getElementsByTagName("td")[6]; // Index 6 for timestamp
+        if (timestamp_td) {
+            var timestamp_text = timestamp_td.textContent;
+            var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
+            if ((filterStart === null && filterEnd === null) || (timestamp >= filterStart && timestamp <= filterEnd)) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
             }
-            calculateOuttakeTotal(filteredRows); //recalculate the total after filtering
         }
+    }
+    calculateOuttakeTotal(); // Recalculate the total after filtering
+}
 
         function clearOuttakeDates() {
             document.getElementById("outtake-date-filter-start").value = "";

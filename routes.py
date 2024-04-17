@@ -479,7 +479,7 @@ def thriftyowlrecords():
     intake_info = collect_intake_info(intake_transactions)
     print(intake_info)  
 
-    return render_template('thriftyowlrecords.html', intake_info=intake_info, outtake_transactions=outtake_transactions)
+    return render_template('thriftyowlrecords.html', intake_info=intake_info, outtake_transactions=outtake_transactions, timedelta=timedelta)
 
 
 def collect_intake_info(intake_transactions):
@@ -694,7 +694,7 @@ def swapshoprecords():
     outtake_transactions = SwapShopOuttakeTransaction.query.all()
     intake_info, donor_info = collect_swap_shop_intake_info(intake_transactions)
 
-    return render_template('swapshoprecords.html', intake_info=intake_info, outtake_transactions=outtake_transactions, donor_info=donor_info)
+    return render_template('swapshoprecords.html', intake_info=intake_info, outtake_transactions=outtake_transactions, donor_info=donor_info, timedelta=timedelta)
 
 
 @app.route('/create_swapshop_intake_transaction', methods=['POST'])
@@ -836,25 +836,31 @@ def release_item_ss():
     item_id = data.get('item_id')
     quantity = int(data.get('quantity'))
     donor_info = data.get('donor_info')
+    
     if not item_id:
         return jsonify({'success': False, 'message': 'Item ID is required'})
+    
     swapshop_item = SwapShopInventory.query.get(item_id)
-    if swapshop_item:
-        if swapshop_item.stock >= quantity:
-            swapshop_item.stock -= quantity
-            outtake_transaction = SwapShopOuttakeTransaction(
-                swap_shop_inventory_id=item_id,
-                quantity=quantity,
-                donor_info=donor_info,
-                timestamp=datetime.utcnow()
-            )
-            db.session.add(outtake_transaction)
-            db.session.commit()
-            return jsonify({'success': True, 'message': 'Item released successfully'})
-        else:
-            return jsonify({'success': False, 'message': 'Insufficient stock'})
-    else:
+    
+    if not swapshop_item:
         return jsonify({'success': False, 'message': 'Item not found'})
+    
+    if swapshop_item.stock < quantity:
+        return jsonify({'success': False, 'message': 'Insufficient stock'})
+    
+    swapshop_item.stock -= quantity
+    
+    outtake_transaction = SwapShopOuttakeTransaction(
+        swap_shop_inventory_id=item_id,
+        quantity=quantity,
+        donor_info=donor_info,
+        timestamp=datetime.utcnow()
+    )
+    
+    db.session.add(outtake_transaction)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Item released successfully'})
 
 
 @app.route('/update_quantity_ss', methods=['POST'])
