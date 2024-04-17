@@ -375,21 +375,23 @@ function releaseItem(itemId, itemName) {
             Swal.fire({
                 title: 'Enter recipient information:',
                 input: 'text',
+                inputLabel: 'Recipient Name',
                 showCancelButton: true,
                 confirmButtonText: 'Release',
                 showLoaderOnConfirm: true,
-                preConfirm: (recipientValue) => {
-                    if (recipientValue.trim() === '') {
-                        return 'Unknown';
+                preConfirm: (recipientName) => {
+                    if (!recipientName.trim()) {
+                        Swal.showValidationMessage("Recipient name cannot be empty");
+                        return false;
                     }
-                    return recipientValue.trim();
+                    return recipientName.trim();
                 }
             }).then((recipientResult) => {
                 if (recipientResult.value) {
                     const releaseData = {
                         item_id: itemId, 
                         quantity: parseInt(quantityResult.value), 
-                        recipient_info: recipientResult.value
+                        donor_info: recipientResult.value // Update field name to donor_info
                     };
                     fetch('/release_item_ss', {
                         method: 'POST',
@@ -417,6 +419,7 @@ function releaseItem(itemId, itemName) {
         }
     });
 }
+
 
 
 
