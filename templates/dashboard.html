@@ -99,110 +99,160 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.getElementById('addItemBtn').addEventListener('click', function() {
-  Swal.fire({
-    title: 'Add New Item to Thrifty Owl',
-    html: `
-      <style>
-        .swal2-input, .swal2-select { 
-          margin: 0.5em 0; 
-          padding: 10px; 
-          width: 100%; 
-          box-sizing: border-box; 
-          border-radius: 4px; 
-          border: 1px solid #d1d3d4; 
-        }
-        .swal2-select::placeholder {
-          color: #aaa;
-        }
-        .swal2-select option {
-          color: black;
-        }
-        .swal2-select option[disabled] {
-          color: #e4e4e4;
-        }
-      </style>
-      <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
-      <input type="text" id="material" class="swal2-input" placeholder="Material">
-      <input type="number" id="weight" class="swal2-input" placeholder="Weight (lb)" required min="0" step="0.01">
-      <input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
-      <input type="number" id="stock" class="swal2-input" placeholder="Stock" required min="0">
-      <input type="text" id="type" class="swal2-input" placeholder="Category" required>
-    `,
-    focusConfirm: false,
-    preConfirm: () => {
-      if(document.getElementById('type').value === "") {
-        Swal.showValidationMessage("Please select an item type");
-        return false;
-      }
-      return {
-        item_name: document.getElementById('item_name').value,
-        material: document.getElementById('material').value,
-        weight: parseFloat(document.getElementById('weight').value),
-        stock: parseFloat(document.getElementById('stock').value),
-        value_per_item: parseFloat(document.getElementById('value_per_item').value),
-        type: document.getElementById('type').value
-      };
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Add Item',
-    confirmButtonColor: '#001489',
-    showLoaderOnConfirm: true
-  }).then((result) => {
-    if (result.isConfirmed) {
-      fetch('/add_item', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    Swal.fire({
+        title: 'Add New Item to Thrifty Owl',
+        html: `
+<style>
+.swal2-input, .swal2-select {
+margin: 0.5em 0;
+padding: 10px;
+width: 100%;
+box-sizing: border-box;
+border-radius: 4px;
+border: 1px solid #d1d3d4;
+}
+.swal2-select::placeholder {
+color: #aaa;
+}
+.swal2-select option {
+color: black;
+}
+.swal2-select option[disabled] {
+color: #e4e4e4;
+}
+</style>
+<input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
+<input type="text" id="material" class="swal2-input" placeholder="Material">
+<input type="number" id="weight" class="swal2-input" placeholder="Weight (lb)" required min="0" step="0.01">
+<input type="number" id="value_per_item" class="swal2-input" placeholder="Value Per Item" required min="0" step="0.01">
+<input type="text" id="type" class="swal2-input" placeholder="Category" required>
+`,
+        focusConfirm: false,
+        preConfirm: () => {
+            if (document.getElementById('type').value === "") {
+                Swal.showValidationMessage("Please select an item type");
+                return false;
+            }
+            return {
+                item_name: document.getElementById('item_name').value,
+                material: document.getElementById('material').value,
+                weight: parseFloat(document.getElementById('weight').value),
+                value_per_item: parseFloat(document.getElementById('value_per_item').value),
+                type: document.getElementById('type').value,
+                stock: 0 // hardcode stock to zero
+            };
         },
-        body: JSON.stringify(result.value)
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        showCancelButton: true,
+        confirmButtonText: 'Add Item',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/add_item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(result.value)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        console.log('Item added successfully');
+                        // Start with quantity input
+                        Swal.fire({
+                            title: 'Enter the initial stock quantity:',
+                            input: 'number',
+                            inputAttributes: {
+                                min: 1,
+                                step: 1,
+                                autocapitalize: 'off'
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Next',
+                            confirmButtonColor: '#001489',
+                            showLoaderOnConfirm: true,
+                        }).then((quantityResult) => {
+                            if (quantityResult.dismiss) {
+                                return;
+                            }
+                            if (quantityResult.isConfirmed && quantityResult.value) {
+                                Swal.fire({
+                                    title: 'Enter donor information:',
+                                    input: 'text',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Submit',
+                                    confirmButtonColor: '#001489',
+                                    showLoaderOnConfirm: true,
+                                    preConfirm: (donorValue) => {
+                                        if (donorValue.trim() === '') {
+                                            return 'Unknown';
+                                        }
+                                        return donorValue.trim();
+                                    }
+                                }).then((donorResult) => {
+                                    const initialStock = parseInt(quantityResult.value);
+                                    const donorInfo = donorResult.value;
+                                    fetch('/update_quantity', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                                id: data.item.id,
+                                                quantity_to_add: initialStock,
+                                                donor_info: donorInfo
+                                            }),
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Stock Added!',
+                                                    text: data.message,
+                                                    didClose: () => {
+                                                        location.reload();
+                                                    }
+                                                });
+                                            } else {
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Oops...',
+                                                    text: data.message,
+                                                });
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Oops...',
+                                                text: 'Something went wrong!',
+                                            });
+                                        });
+                                });
+                            } else if (quantityResult.isConfirmed) {
+                                Swal.fire('Please enter a valid initial stock quantity.');
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    Swal.fire('Error!', 'There was a problem.', 'error');
+                });
         }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          console.log('Item added successfully'); // Debug statement
-
-          // Create a new table row for the newly added item
-          const newRow = document.createElement('tr');
-          newRow.id = `item_${data.item.id}`;
-          newRow.innerHTML = `
-            <td>${data.item.item_name}</td>
-            <td>${data.item.material || ''}</td>
-            <td>${data.item.weight || ''}</td>
-            <td>${data.item.type || ''}</td>
-            <td><input type="number" id="quantity_${data.item.id}" value="${data.item.stock}" class="form-control"></td>
-            <td>${data.item.value_per_item || ''}</td>
-            <td>
-              <button onclick="releaseItem(${data.item.id}, '${data.item.item_name}')" class="btn btn-primary"><i class="fas fa-minus"></i></button>
-              <button onclick="updateQuantity(${data.item.id})" class="btn btn-primary"><i class="fas fa-plus"></i></button>
-              <button onclick="printBarcode('${data.item.barcode}', '${data.item.item_name}')" class="btn btn-success"><i class="fas fa-barcode"></i></button>
-              <button onclick="deleteItem(${data.item.id})" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
-            </td>
-          `;
-          const inventoryBody = document.getElementById('inventoryBody');
-          inventoryBody.appendChild(newRow);
-
-          console.log('Launching updateQuantity modal'); // Debug statement
-          updateQuantity(data.item.id); 
-          
-          // Display success message after the Swal modal is closed
-          Swal.fire('Success!', 'Item added successfully.', 'success');
-        } else {
-          // Display error message returned from the Flask route
-          Swal.fire('Error!', data.message, 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        Swal.fire('Error!', 'There was a problem.', 'error');
-      });
-    }
-  });
+    });
 });
+
 
 function showItemDetails(itemId) {
     fetch(`/get_item_details/${itemId}`)
