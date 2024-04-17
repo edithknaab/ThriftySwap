@@ -76,6 +76,15 @@
             </thead>            
             <tbody id="inventoryBody">
             </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Total:</th>
+                    <th id="totalWeight">0</th>
+                    <th colspan="2"></th>
+                    <th id="totalValue">0</th>
+                    <th></th>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
@@ -235,6 +244,8 @@ function fetchInventory() {
         .then(data => {
             const inventoryBody = document.getElementById('inventoryBody');
             inventoryBody.innerHTML = '';
+            let totalWeight = 0;
+            let totalValue = 0;
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
                 row.id = `item_${item.id}`;  // Assign an id to the row
@@ -253,7 +264,11 @@ function fetchInventory() {
                     </td>
                 `;
                 inventoryBody.appendChild(row);
+                totalWeight += parseFloat(item.weight);
+                totalValue += parseFloat(item.value_per_item);
             });
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+            document.getElementById('totalValue').textContent = totalValue.toFixed(2);
         })
         .catch(error => console.error('Error:', error));
 }
@@ -341,11 +356,6 @@ function updateQuantity(itemId) {
         }
     });
 }
-
-
-
-
-
 
 function printBarcode(barcode, itemName) {
     if (barcode !== null) {
@@ -594,6 +604,28 @@ document.getElementById('searchInput').addEventListener('input', function() {
             row.style.display = 'none'; // Hide the row if item name or type doesn't match search term
         }
     });
+
+    calculateTotals();
+
 });
+
+function calculateTotals() {
+    let totalWeight = 0;
+    let totalValue = 0;
+    const visibleRows = document.querySelectorAll('#inventoryBody tr');
+
+    visibleRows.forEach(row => {
+        if (row.style.display !== 'none') {
+            const weight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
+            const value = parseFloat(row.querySelector('td:nth-child(6)').textContent);
+            totalWeight += isNaN(weight) ? 0 : weight;
+            totalValue += isNaN(value) ? 0 : value;
+        }
+    });
+
+    // Update total weight and total value
+    document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+    document.getElementById('totalValue').textContent = totalValue.toFixed(2);
+}
 </script>
 {% endblock %}
