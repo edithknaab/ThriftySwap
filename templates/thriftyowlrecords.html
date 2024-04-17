@@ -114,6 +114,8 @@
             </tbody>
         </table>
         <div id="intake-total" class="total-value"></div>
+        <div id="intake-total-weight" class="total-weight"></div> 
+
     </div>    
     </div>
 
@@ -171,6 +173,7 @@
             </tbody>
         </table>
         <div id="outtake-total" class="total-value"></div>
+        <div id="outtake-total-weight" class="total-weight"></div>
     </div>
     </div>
     
@@ -277,33 +280,44 @@
 
         
         function calculateIntakeTotal() {
-            var intakeTotal = 0;
-            var table = document.getElementById("intake-table");
-            var rows = table.getElementsByTagName("tr");
-            for (var i = 1; i < rows.length; i++) {
-                if (rows[i].style.display !== "none") { 
-                    var rowCells = rows[i].getElementsByTagName("td");
-                    var valuePerItem = parseFloat(rowCells[2].innerText); 
-                    var quantity = parseFloat(rowCells[5].innerText); 
-                    var totalValue = valuePerItem * quantity; 
-                    intakeTotal += totalValue;
-                }
-            }
-            document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
-        }
+    var intakeTotal = 0;
+    var intakeTotalWeight = 0; // Initialize intakeTotalWeight variable
+    var table = document.getElementById("intake-table");
+    var rows = table.getElementsByTagName("tr");
+    for (var i = 1; i < rows.length; i++) {
+        if (rows[i].style.display !== "none") { 
+            var rowCells = rows[i].getElementsByTagName("td");
+            var valuePerItem = parseFloat(rowCells[2].innerText); 
+            var quantity = parseFloat(rowCells[5].innerText); 
+            var totalValue = valuePerItem * quantity; 
+            intakeTotal += totalValue;
 
-        function calculateOuttakeTotal() {
-            var outtakeTotal = 0;
-            var table = document.getElementById("outtake-table");
-            var rows = table.getElementsByTagName("tr");
-            for (var j = 1; j < rows.length; j++) {
-                if (rows[j].style.display !== "none") { 
-                    var rowCells = rows[j].getElementsByTagName("td");
-                    outtakeTotal += parseFloat(rowCells[7].innerText); 
-                }
-            }
-            document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
+            var weight = parseFloat(rowCells[3].innerText);
+            intakeTotalWeight += isNaN(weight) ? 0 : weight;
         }
+    }
+    console.log("Intake Total:", intakeTotal); // Log intakeTotal to console
+    console.log("Intake Total Weight:", intakeTotalWeight); // Log intakeTotalWeight to console
+    document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
+    document.getElementById("intake-total-weight").innerText = "Total Weight: " + intakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
+}
+
+function calculateOuttakeTotal() {
+    var outtakeTotal = 0;
+    var outtakeTotalWeight = 0; // Initialize total weight variable
+    var table = document.getElementById("outtake-table");
+    var rows = table.getElementsByTagName("tr");
+    for (var j = 1; j < rows.length; j++) {
+        if (rows[j].style.display !== "none") { 
+            var rowCells = rows[j].getElementsByTagName("td");
+            outtakeTotal += parseFloat(rowCells[7].innerText); // Assuming the total value is in the 8th column
+            var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 4th column
+            outtakeTotalWeight += isNaN(weight) ? 0 : weight; // Add weight to total if it's a valid number
+        }
+    }
+    document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
+    document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
+}
 
         function filterIntakeByDate() {
             var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;

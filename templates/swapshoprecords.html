@@ -105,6 +105,7 @@
             </table>
         </div>
         <div id="intake-total"></div>
+        <div id="intake-total-weight"></div>
     </div>
 
     <div id="outtake-report" style="display: none;">
@@ -158,6 +159,7 @@
             </tbody>
         </table>
         <div id="outtake-total"></div>
+        <div id="outtake-total-weight"></div>
     </div>  
 
 <script>
@@ -343,21 +345,30 @@ function searchOuttakeTable() {
 
 function calculateIntakeTotal(filteredRows) {
     var intakeTotal = 0;
+    var intakeTotalWeight = 0; // Initialize total weight variable
     for (var i = 0; i < filteredRows.length; i++) {
         var rowCells = filteredRows[i].getElementsByTagName("td");
-        intakeTotal += parseFloat(rowCells[5].innerText);
+        intakeTotal += parseFloat(rowCells[5].innerText); // Assuming the total value is in the 6th column
+        var weight = parseFloat(rowCells[4].innerText); // Assuming the weight is in the 5th column
+        intakeTotalWeight += isNaN(weight) ? 0 : weight; // Add weight to total if it's a valid number
     }
-    document.getElementById("intake-total").innerText = "Total Value: " + intakeTotal.toFixed(2);
+    document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
+    document.getElementById("intake-total-weight").innerText = "Total Weight: " + intakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
 }
 
 function calculateOuttakeTotal(filteredRows) {
     var outtakeTotal = 0;
+    var outtakeTotalWeight = 0; // Initialize total weight variable
     for (var j = 0; j < filteredRows.length; j++) {
         var rowCells = filteredRows[j].getElementsByTagName("td");
-        outtakeTotal += parseFloat(rowCells[5].innerText);
+        outtakeTotal += parseFloat(rowCells[5].innerText); // Assuming the total value is in the 6th column
+        var weight = parseFloat(rowCells[4].innerText); // Assuming the weight is in the 5th column
+        outtakeTotalWeight += isNaN(weight) ? 0 : weight; // Add weight to total if it's a valid number
     }
-    document.getElementById("outtake-total").innerText = "Total Value: " + outtakeTotal.toFixed(2);
+    document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
+    document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
 }
+
 
 window.onload = function() {
         toggleReport(); 
