@@ -164,39 +164,64 @@
     
     <script>
         function editTransaction(transactionId, type) {
-            var donorInfo = prompt("Enter new donor info:");
-            if (donorInfo === null || donorInfo === "") {
-                alert("You must enter a donor info.");
-                return;
-            }
-
-            var url = type === 'intake' ? '/edit_intake_transaction' : '/edit_outtake_transaction';
-            var data = { 'transaction_id': transactionId, 'donor_info': donorInfo };
-
-            // Store the current report type in the local storage before reloading the page
-            localStorage.setItem('reportType', type);
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert("The transaction was successfully edited.");
-                    location.reload();
-                } else {
-                    alert("An error occurred: " + data.message);
+            Swal.fire({
+                title: 'Enter new donor info:',
+                input: 'text',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                confirmButtonColor: '#001489',
+                showLoaderOnConfirm: true,
+                preConfirm: (donorValue) => {
+                    if (donorValue.trim() === '') {
+                        Swal.showValidationMessage("You must enter a donor.");
+                    }
+                    return donorValue.trim();
                 }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
+            }).then((donorResult) => {
+                if (donorResult.isConfirmed) {
+                    var donorInfo = donorResult.value;
+                    var url = type === 'intake' ? '/edit_intake_transaction' : '/edit_outtake_transaction';
+                    var data = { 'transaction_id': transactionId, 'donor_info': donorInfo };
+
+                    // Store the current report type in the local storage before reloading the page
+                    localStorage.setItem('reportType', type);
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: "Donor successfully updated.",
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: "An error occurred: " + data.message,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong!',
+                        });
+                    });
+                }
             });
         }
-
         function toggleReport() {
             var reportType = document.getElementById("report-type").value;
 

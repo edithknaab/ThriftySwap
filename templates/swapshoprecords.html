@@ -155,12 +155,22 @@
 <script>
 
 function editTransaction(transactionId, type) {
-            var donorInfo = prompt("Enter new donor info:");
-            if (donorInfo === null || donorInfo === "") {
-                alert("You must enter a donor info.");
-                return;
+    Swal.fire({
+        title: 'Enter new donor info:',
+        input: 'text',
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        confirmButtonColor: '#001489',
+        showLoaderOnConfirm: true,
+        preConfirm: (donorValue) => {
+            if (donorValue.trim() === '') {
+                Swal.showValidationMessage("You must enter a donor.");
             }
-
+            return donorValue.trim();
+        }
+    }).then((donorResult) => {
+        if (donorResult.isConfirmed) {
+            var donorInfo = donorResult.value;
             var url = type === 'intake' ? '/edit_swapshop_intake_transaction' : '/edit_swapshop_outtake_transaction';
             var data = { 'transaction_id': transactionId, 'donor_info': donorInfo };
 
@@ -177,16 +187,32 @@ function editTransaction(transactionId, type) {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    alert("The transaction was successfully edited.");
-                    location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: "Donor successfully updated.",
+                    }).then(() => {
+                        location.reload();
+                    });
                 } else {
-                    alert("An error occurred: " + data.message);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: "An error occurred: " + data.message,
+                    });
                 }
             })
             .catch((error) => {
                 console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong!',
+                });
             });
         }
+    });
+}
 function toggleReport() {
         var reportType = document.getElementById("report-type").value;
 
