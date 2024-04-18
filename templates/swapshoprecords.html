@@ -70,11 +70,12 @@
                 <thead>
                     <tr>
                         <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Timestamp</th>
-                        <th>Donor Information</th>
+                        <th>Material</th>
                         <th>Value Per Item</th>
                         <th> Weight </th>
+                        <th>Timestamp</th>
+                        <th>Amount Donated</th>
+                        <th>Donor Information</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,17 +83,18 @@
                     {% for intake_transaction in intake_data %}
                     <tr>
                         <td>{{ intake_transaction.swap_shop_inventory.item_name }}</td>
-                        <td>{{ intake_transaction.quantity }}</td>
+                        <td>{{ intake_transaction.swap_shop_inventory.material }}</td>
+                        <td>{{ intake_transaction.swap_shop_inventory.value_per_item }}</td>
+                        <td>{{ intake_transaction.swap_shop_inventory.weight }}</td>
                         <td>
                             {% set timestamp = intake_transaction.timestamp - timedelta(hours=4) %}
                             {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
-                        </td>        
+                        </td>
+                        <td>{{ intake_transaction.quantity }}</td>     
                         <td>
                             {{ intake_transaction.donor_info }}
                             <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ intake_transaction.id }}', 'intake')">   
                         </td>
-                        <td>{{ intake_transaction.swap_shop_inventory.value_per_item }}</td>
-                        <td>{{ intake_transaction.swap_shop_inventory.weight }}</td>
                     </tr>
                     {% endfor %}
                     {% endfor %}
@@ -122,28 +124,30 @@
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Timestamp</th>
-                    <th>Recipient Information</th>
+                    <th>Material</th>
+                    <th>Value Per Item</th>
                     <th>Weight</th>
-                    <th> Value Per Item </th>
+                    <th>Timestamp</th>
+                    <th>Amount Taken</th>
+                    <th>Recipient Information</th>
                 </tr>
             </thead>
             <tbody>
                 {% for outtake_transaction in outtake_transactions %}
                 <tr>
                     <td>{{ outtake_transaction.swap_shop_inventory.item_name }}</td> 
-                    <td>{{ outtake_transaction.quantity }}</td>
+                    <td>{{ outtake_transaction.swap_shop_inventory.material }}</td>
+                    <td>{{ outtake_transaction.swap_shop_inventory.value_per_item }}</td>
+                    <td>{{ outtake_transaction.swap_shop_inventory.weight }}</td>
                     <td>
                         {% set timestamp = outtake_transaction.timestamp - timedelta(hours=4) %}
                         {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
-                    </td>          
+                    </td> 
+                    <td>{{ outtake_transaction.quantity }}</td>         
                     <td>
                         {{ outtake_transaction.donor_info }}
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
                     </td>
-                    <td>{{ outtake_transaction.swap_shop_inventory.weight }}</td>
-                    <td>{{ outtake_transaction.swap_shop_inventory.value_per_item }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -250,7 +254,7 @@ function toggleReport() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[2]; // Index 2 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 2 for timestamp
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
             var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
@@ -288,7 +292,7 @@ function filterOuttakeByDate() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[2]; // Index 2 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 2 for timestamp
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
             var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
@@ -321,7 +325,7 @@ function searchIntakeTable() {
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
         var itemName_td = tr[i].getElementsByTagName("td")[0]; 
-        var donorInfo_td = tr[i].getElementsByTagName("td")[3]; 
+        var donorInfo_td = tr[i].getElementsByTagName("td")[6]; 
         if (itemName_td || donorInfo_td) {
             var itemName_text = itemName_td.textContent || itemName_td.innerText;
             var donorInfo_text = donorInfo_td.textContent || donorInfo_td.innerText;
@@ -345,7 +349,7 @@ function searchOuttakeTable() {
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
         var itemName_td = tr[i].getElementsByTagName("td")[0];
-        var recipientInfo_td = tr[i].getElementsByTagName("td")[3]; 
+        var recipientInfo_td = tr[i].getElementsByTagName("td")[6]; 
         if (itemName_td || recipientInfo_td) {
             var itemName_text = itemName_td.textContent || itemName_td.innerText;
             var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
@@ -365,10 +369,10 @@ function calculateIntakeTotal(filteredRows) {
     var intakeTotalWeight = 0; // Initialize total weight variable
     for (var i = 0; i < filteredRows.length; i++) {
         var rowCells = filteredRows[i].getElementsByTagName("td");
-        var valuePerItem = parseFloat(rowCells[4].innerText); // Assuming the value per item is in the 5th column
-        var quantity = parseFloat(rowCells[1].innerText); // Assuming the quantity is in the 2nd column
+        var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
+        var quantity = parseFloat(rowCells[5].innerText); // Assuming the quantity is in the 2nd column
         intakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); // Add total value
-        var weight = parseFloat(rowCells[5].innerText); // Assuming the weight is in the 6th column
+        var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 6th column
         intakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Add weighted quantity to total weight if it's a valid number
     }
     document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
@@ -380,18 +384,15 @@ function calculateOuttakeTotal(filteredRows) {
     var outtakeTotalWeight = 0; // Initialize total weight variable
     for (var j = 0; j < filteredRows.length; j++) {
         var rowCells = filteredRows[j].getElementsByTagName("td");
-        var valuePerItem = parseFloat(rowCells[5].innerText); // Assuming the value per item is in the 5th column
-        var quantity = parseFloat(rowCells[1].innerText); // Assuming the quantity is in the 2nd column
+        var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
+        var quantity = parseFloat(rowCells[5].innerText); // Assuming the quantity is in the 2nd column
         outtakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); // Add total value
-        var weight = parseFloat(rowCells[4].innerText); // Assuming the weight is in the 4th column
+        var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 4th column
         outtakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Add weighted quantity to total weight if it's a valid number
     }
     document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
     document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
 }
-
-
-
 
 window.onload = function() {
         toggleReport(); 

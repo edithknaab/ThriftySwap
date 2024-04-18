@@ -131,27 +131,29 @@
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Weight</th>
-                    <th>Recipient Information</th>
+                    <th>Material</th>
                     <th>Value Per Item</th>
+                    <th>Weight</th>
+                    <th>Amount Taken</th>
                     <th>Timestamp</th>
+                    <th>Recipient Information</th>
                 </tr>
             </thead>
             <tbody>
                 {% for outtake_transaction in outtake_transactions %}
                 <tr>
-                    <td>{{ outtake_transaction.inventory.item_name }}</td> 
-                    <td>{{ outtake_transaction.quantity }}</td>
-                    <td>{{ outtake_transaction.inventory.weight }}</td>  
-                    <td>
-                        {{ outtake_transaction.donor_info }}
-                        <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
-                    </td>
-                    <td>{{ outtake_transaction.inventory.value_per_item }}</td> 
+                    <td>{{ outtake_transaction.inventory.item_name }}</td>
+                    <td>{{ outtake_transaction.inventory.material }}</td> 
+                    <td>{{ outtake_transaction.inventory.value_per_item }}</td>
+                    <td>{{ outtake_transaction.inventory.weight }}</td> 
+                    <td>{{ outtake_transaction.quantity }}</td> 
                     <td>
                         {% set timestamp = outtake_transaction.timestamp - timedelta(hours=4) %}
                         {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
+                    </td>
+                    <td>
+                        {{ outtake_transaction.donor_info }}
+                        <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
                     </td>                                          
                 </tr>
                 {% endfor %}
@@ -319,9 +321,9 @@ function calculateOuttakeTotal() {
     for (var j = 1; j < rows.length; j++) {
         if (rows[j].style.display !== "none") { 
             var rowCells = rows[j].getElementsByTagName("td");
-            var quantity = parseFloat(rowCells[1].innerText); // Assuming the quantity is in the 2nd column
-            var valuePerItem = parseFloat(rowCells[4].innerText); // Assuming the value per item is in the 5th column
-            var weight = parseFloat(rowCells[2].innerText); // Assuming the weight is in the 3rd column
+            var quantity = parseFloat(rowCells[4].innerText); // Assuming the quantity is in the 2nd column
+            var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
+            var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 3rd column
 
             outtakeTotal += isNaN(quantity) || isNaN(valuePerItem) ? 0 : (quantity * valuePerItem);
             outtakeTotalWeight += isNaN(quantity) || isNaN(weight) ? 0 : (quantity * weight);
@@ -427,7 +429,7 @@ function filterOuttakeByDate() {
                 clearDateButton.style.display = "none";
             }
         }
-        function printIntakeTable() {
+function printIntakeTable() {
     var intakeTable = document.getElementById("intake-table").outerHTML;
     var intakeTotal = document.getElementById("intake-total").outerHTML; 
     var intakeTotalWeight = document.getElementById("intake-total-weight").outerHTML;
