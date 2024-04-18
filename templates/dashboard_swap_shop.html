@@ -226,10 +226,10 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
                     const itemId = data.item_id; // item_id from the response
                     // Prompt for initial stock quantity
                     Swal.fire({
-                        title: 'Enter the initial stock quantity:',
+                        title: 'Enter the initial stock amount:',
                         input: 'number',
                         inputAttributes: {
-                            min: 1,
+                            min: 0,
                             step: 1,
                             autocapitalize: 'off'
                         },
@@ -237,6 +237,13 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
                         confirmButtonText: 'Next',
                         confirmButtonColor: '#001489',
                         showLoaderOnConfirm: true,
+                        preConfirm: (stockValue) => {
+                        if (stockValue === "" || stockValue === null || isNaN(stockValue)) {
+                            Swal.showValidationMessage("Please enter a valid stock amount");
+                            return false;
+                        }
+                        return parseInt(stockValue); // Return the parsed integer if validation passes
+                    }
                     }).then((quantityResult) => {
                         if (quantityResult.dismiss) {
                             return;
@@ -244,17 +251,18 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
                         if (quantityResult.isConfirmed && quantityResult.value) {
                             // Prompt for donor information
                             Swal.fire({
-                                title: 'Enter donor information:',
+                                title: 'Enter donor:',
                                 input: 'text',
+                                inputPlaceholder: 'Enter donor or leave blank for "Unknown".',
                                 showCancelButton: true,
                                 confirmButtonText: 'Submit',
                                 confirmButtonColor: '#001489',
                                 showLoaderOnConfirm: true,
                                 preConfirm: (donorValue) => {
-                                    if (donorValue.trim() === '') {
+                                    if (!donorInfo) {
                                         return 'Unknown';
                                     }
-                                    return donorValue.trim();
+                                    return donorValue;
                                 }
                             }).then((donorResult) => {
                                 const initialStock = parseInt(quantityResult.value);
