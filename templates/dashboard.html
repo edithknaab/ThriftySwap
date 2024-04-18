@@ -10,20 +10,20 @@
 
     .table {
         border-radius: 15px;
-        border: 3px solid #001489; /* Thicker border */
+        border: 3px solid #001489; 
     }
 
     .table thead th {
-        background-color: #001489; /* Header background color */
-        color: #ffffff; /* Header text color */
+        background-color: #001489; 
+        color: #ffffff; 
     }
     .sortable-th {
         cursor: pointer;
-        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+        transition: background-color 0.3s ease; 
     }
 
     .sortable-th:hover {
-        background-color: #f5c445; /* Slightly darker shade on hover */
+        background-color: #f5c445; 
     }
 
     .sort-icon {
@@ -51,9 +51,8 @@
         <p id="itemValue"></p>
     </div>
 </div>
-<!-- Inventory window -->
+
 <div class="inventory-window">
-    <!-- Input fields container -->
     <div>
         <input type="text" id="searchInput" placeholder="Search by 'Item Name' or 'Category'...">
         <input type="text" id="scannedBarcode" placeholder="Click here to scan barcode..." onfocus="this.placeholder = 'Scan desired barcode'" onblur="this.placeholder = 'Click here to scan barcode...'">
@@ -66,7 +65,7 @@
                 <tr>
                     <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(2)">Weight (lb) <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(2)">Weight (lbs) <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Stock</th>
                     <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
@@ -91,7 +90,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3/dist/JsBarcode.all.min.js"></script>
 <script>
-//sweet alert updates changed the way the code is displayed?..(ask erik)
+//sweet alert updates 
 document.addEventListener('DOMContentLoaded', function() {
     fetchInventory();
     scanBarcode();
@@ -104,23 +103,24 @@ document.getElementById('addItemBtn').addEventListener('click', function() {
         html: `
 <style>
 .swal2-input, .swal2-select {
-margin: 0.5em 0;
-padding: 10px;
-width: 100%;
-box-sizing: border-box;
-border-radius: 4px;
-border: 1px solid #d1d3d4;
+    margin: 0.5em 0;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #d1d3d4;
 }
-.swal2-select::placeholder {
-color: #aaa;
+    .swal2-select::placeholder {
+    color: #aaa;
+    }
+    .swal2-select option {
+    color: black;
 }
-.swal2-select option {
-color: black;
-}
-.swal2-select option[disabled] {
-color: #e4e4e4;
+    .swal2-select option[disabled] {
+    color: #e4e4e4;
 }
 </style>
+
 <input type="text" id="item_name" class="swal2-input" placeholder="Item Name" required>
 <input type="text" id="material" class="swal2-input" placeholder="Material">
 <input type="number" id="weight" class="swal2-input" placeholder="Weight (lb)" required min="0" step="0.01">
@@ -157,7 +157,7 @@ color: #e4e4e4;
                 weight: weightFloat,
                 value_per_item: valueFloat,
                 type: inputs.type,
-                stock: 0 // hardcode stock to zero
+                stock: 0 // changed to prompt for intital stock
             };
         },
         showCancelButton: true,
@@ -200,7 +200,7 @@ color: #e4e4e4;
                             Swal.showValidationMessage("Please enter a valid stock amount");
                             return false;
                         }
-                        return parseInt(stockValue); // Return the parsed integer if validation passes
+                        return parseInt(stockValue); 
                     }
                     }).then((quantityResult) => {
                         if (quantityResult.dismiss) {
@@ -285,7 +285,7 @@ function showItemDetails(itemId) {
     fetch(`/get_item_details/${itemId}`)
         .then(response => response.json())
         .then(data => {
-            // Prepare the HTML content for SweetAlert
+            
             const itemDetailsHtml = `
                 <p><strong>Item Name:</strong> ${data.item_name}</p>
                 <p><strong>Material:</strong> ${data.material}</p>
@@ -298,9 +298,9 @@ function showItemDetails(itemId) {
             Swal.fire({
                 title: 'Item Details',
                 html: itemDetailsHtml,
-                showCloseButton: true, // Allows closing by clicking the "X" button
+                showCloseButton: true, 
                 focusConfirm: false,
-                showConfirmButton: false, // Removes the "Close" button
+                showConfirmButton: false, 
                 footer: '<button class="btn btn-primary" onclick="updateQuantity(' + itemId + ')" type="button" style="margin-right: 8px;">Add</button>' +
                         '<button class="btn btn-primary" onclick="releaseItem(' + itemId + ',\'' + data.item_name + '\')" type="button">Release</button>',
                 showCancelButton: false,
@@ -308,8 +308,8 @@ function showItemDetails(itemId) {
                     confirmButton: 'btn btn-success',
                 },
                 buttonsStyling: false,
-                allowOutsideClick: true, // Allows closing by clicking outside the modal
-                allowEscapeKey: true, // Allows closing by pressing the ESC key
+                allowOutsideClick: true, 
+                allowEscapeKey: true, 
             });
         });
 }
@@ -324,7 +324,7 @@ function fetchInventory() {
             let totalValue = 0;
             data.inventory.forEach(item => {
                 const row = document.createElement('tr');
-                row.id = `item_${item.id}`;  // Assign an id to the row
+                row.id = `item_${item.id}`; 
                 row.innerHTML = `
                     <td>${item.item_name}</td>
                     <td>${item.material}</td>
@@ -356,7 +356,6 @@ function fetchInventory() {
 
 
 function updateQuantity(itemId) {
-    // Start with quantity input
     Swal.fire({
         title: 'Enter the quantity to add:',
         input: 'number',
@@ -370,13 +369,13 @@ function updateQuantity(itemId) {
         confirmButtonColor: '#001489',
         showLoaderOnConfirm: true,
     }).then((quantityResult) => {
-        // Check if the dialog was dismissed (e.g., by pressing "Cancel")
+        
         if (quantityResult.dismiss) {
-            // If dismissed, just return and do nothing
+            
             return;
         }
         if (quantityResult.isConfirmed && quantityResult.value) {
-            // Then ask for donor information
+            
             Swal.fire({
                 title: 'Enter donor information:',
                 input: 'text',
@@ -406,8 +405,8 @@ function updateQuantity(itemId) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        document.getElementById(`quantity_${itemId}`).value = newQuantity; // Update the input field
-                        document.getElementById('itemStock').innerText = "Stock: " + newQuantity; // Update modal's stock display
+                        document.getElementById(`quantity_${itemId}`).value = newQuantity; 
+                        document.getElementById('itemStock').innerText = "Stock: " + newQuantity; 
 
                         Swal.fire({
                             icon: 'success',
@@ -605,9 +604,9 @@ function scanBarcode() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data); // Log the server response
+                console.log(data);
                 if (data.success) {
-                    // Call the showItemDetails function with the item id
+                    
                     showItemDetails(data.itemId);
                 } else {
                     alert(`Item not found: ${scannedBarcode}. ${data.message}`);
@@ -615,10 +614,10 @@ function scanBarcode() {
             })
             .catch(error => console.error('Error:', error));
 
-            // Clear the input field and scannedBarcode variable
+            
             scannedBarcode = '';
             inputField.value = '';
-        }, 500); // Wait for 500ms after the last input to send the barcode
+        }, 500); 
     });
 }
 
@@ -636,17 +635,16 @@ function sortTable(columnIndex) {
             x = rows[i].getElementsByTagName("TD")[columnIndex];
             y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
 
-            // Determine if we need to parse as float for "Weight" and "Value Per Item" columns
+            
             let xVal, yVal;
-            if (columnIndex === 2 || columnIndex === 5) { // Numeric sorting for "Weight" and "Value Per Item"
+            if (columnIndex === 2 || columnIndex === 5) { 
                 xVal = parseFloat(x.innerHTML) || 0;
                 yVal = parseFloat(y.innerHTML) || 0;
-            } else { // Alphabetical sorting for other columns
+            } else { 
                 xVal = x.innerHTML.toLowerCase();
                 yVal = y.innerHTML.toLowerCase();
             }
 
-            // Ascending or descending comparison
             if (dir == "asc") {
                 if (xVal > yVal) {
                     shouldSwitch = true;
@@ -668,7 +666,7 @@ function sortTable(columnIndex) {
                 dir = "desc";
                 switching = true;
             } else if (switchcount !== 0 && dir == "desc") {
-                dir = "asc"; // Reset direction after a full cycle
+                dir = "asc"; 
             }
         }
     }
@@ -682,9 +680,9 @@ document.getElementById('searchInput').addEventListener('input', function() {
         const itemName = row.querySelector('td:first-child').textContent.trim().toLowerCase();
         const itemType = row.querySelector('td:nth-child(4)').textContent.trim().toLowerCase();
         if (itemName.includes(searchTerm) || itemType.includes(searchTerm)) {
-            row.style.display = ''; // Show the row if item name or type matches search term
+            row.style.display = ''; 
         } else {
-            row.style.display = 'none'; // Hide the row if item name or type doesn't match search term
+            row.style.display = 'none'; 
         }
     });
 
@@ -701,17 +699,16 @@ function calculateTotals() {
         if (row.style.display !== 'none') {
             const weight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
             const value = parseFloat(row.querySelector('td:nth-child(6)').textContent);
-            const stock = parseInt(row.querySelector('td:nth-child(5) input').value); // Get the stock input value
+            const stock = parseInt(row.querySelector('td:nth-child(5) input').value); 
             if (!isNaN(weight) && !isNaN(value) && !isNaN(stock)) {
-                const weightedWeight = weight * stock; // Calculate weighted weight
-                const weightedValue = value * stock; // Calculate weighted value
-                totalWeight += weightedWeight; // Accumulate weighted weight
-                totalValue += weightedValue; // Accumulate weighted value
+                const weightedWeight = weight * stock; 
+                const weightedValue = value * stock; 
+                totalWeight += weightedWeight; 
+                totalValue += weightedValue; 
             }
         }
     });
 
-    // Update total weight and total value
     document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
     document.getElementById('totalValue').textContent = totalValue.toFixed(2);
 }

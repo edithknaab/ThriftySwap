@@ -41,6 +41,7 @@
         margin-bottom: 10px; 
     }
 </style>
+<body onload="sortTableByDate('intake-table', 4); sortTableByDate('outtake-table', 4);">
 <div>
     <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Swap Shop Inventory Report</h2>
     <div class="mb-3">
@@ -108,7 +109,6 @@
         <div id="intake-total"></div>
         <div id="intake-total-weight"></div>
     </div>
-
     <div id="outtake-report" style="display: none;">
         <h3 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Outtake Report</h3>
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -162,10 +162,10 @@
         </table>
         <div id="outtake-total"></div>
         <div id="outtake-total-weight"></div>
-    </div>  
-
+    </div> 
+</div>
+ 
 <script>
-
 function editTransaction(transactionId, type) {
     Swal.fire({
         title: 'Enter new donor info:',
@@ -186,7 +186,6 @@ function editTransaction(transactionId, type) {
             var url = type === 'intake' ? '/edit_swapshop_intake_transaction' : '/edit_swapshop_outtake_transaction';
             var data = { 'transaction_id': transactionId, 'donor_info': donorInfo };
 
-            // Store the current report type in the local storage before reloading the page
             localStorage.setItem('reportType', type);
 
             fetch(url, {
@@ -226,35 +225,31 @@ function editTransaction(transactionId, type) {
     });
 }
 function toggleReport() {
-        var reportType = document.getElementById("report-type").value;
-
-                    // Check if there is a report type stored in the local storage
-        var storedReportType = localStorage.getItem('reportType');
-        if (storedReportType) {
-            reportType = storedReportType;
-            // Set the select value to the stored report type
-            document.getElementById("report-type").value = reportType;
-            // Remove the stored report type from the local storage
-            localStorage.removeItem('reportType');
+    var reportType = document.getElementById("report-type").value;
+    var storedReportType = localStorage.getItem('reportType');
+    if (storedReportType) {
+        reportType = storedReportType;
+            
+        document.getElementById("report-type").value = reportType;
+        localStorage.removeItem('reportType');
         }
 
-        if (reportType === "intake") {
-            document.getElementById("intake-report").style.display = "block";
-            document.getElementById("outtake-report").style.display = "none";
-        } else if (reportType === "outtake") {
-            document.getElementById("intake-report").style.display = "none";
-            document.getElementById("outtake-report").style.display = "block";
-        }
+    if (reportType === "intake") {
+         document.getElementById("intake-report").style.display = "block";
+        document.getElementById("outtake-report").style.display = "none";
+    } else if (reportType === "outtake") {
+        document.getElementById("intake-report").style.display = "none";
+        document.getElementById("outtake-report").style.display = "block";
     }
+}
 
-    function filterIntakeByDate() {
+function filterIntakeByDate() {
     var inputStart, inputEnd, filterStart, filterEnd, table, tr, td, i;
     inputStart = document.getElementById("intake-date-filter-start");
     inputEnd = document.getElementById("intake-date-filter-end");
     filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00') : null;
     filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59') : null;
 
-    // Log the start and end dates to the console
     console.log('Start date:', filterStart);
     console.log('End date:', filterEnd);
 
@@ -262,12 +257,11 @@ function toggleReport() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 2 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[4];
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
-            var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
+            var timestamp = new Date(timestamp_text);
             if (filterStart && !filterEnd) {
-                // If only the start date is selected, show data from start date until now
                 if (timestamp >= filterStart) {
                     tr[i].style.display = "";
                     filteredRows.push(tr[i]);
@@ -282,7 +276,7 @@ function toggleReport() {
             }
         }
     }
-    calculateIntakeTotal(filteredRows); // Recalculate the total after filtering
+    calculateIntakeTotal(filteredRows);
 }
 
 function filterOuttakeByDate() {
@@ -292,7 +286,6 @@ function filterOuttakeByDate() {
     filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00') : null;
     filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59') : null;
 
-    // Log the start and end dates to the console
     console.log('Start date:', filterStart);
     console.log('End date:', filterEnd);
 
@@ -300,12 +293,11 @@ function filterOuttakeByDate() {
     tr = table.getElementsByTagName("tr");
     var filteredRows = [];
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 2 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[4]; 
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
-            var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
+            var timestamp = new Date(timestamp_text); 
             if (filterStart && !filterEnd) {
-                // If only the start date is selected, show data from start date until now
                 if (timestamp >= filterStart) {
                     tr[i].style.display = "";
                     filteredRows.push(tr[i]);
@@ -320,9 +312,8 @@ function filterOuttakeByDate() {
             }
         }
     }
-    calculateOuttakeTotal(filteredRows); // Recalculate the total after filtering
+    calculateOuttakeTotal(filteredRows); 
 }
-
 
 function searchIntakeTable() {
     var input, filter, table, tr, td, i, txtValue;
@@ -374,43 +365,43 @@ function searchOuttakeTable() {
 
 function calculateIntakeTotal(filteredRows) {
     var intakeTotal = 0;
-    var intakeTotalWeight = 0; // Initialize total weight variable
+    var intakeTotalWeight = 0; 
     for (var i = 0; i < filteredRows.length; i++) {
         var rowCells = filteredRows[i].getElementsByTagName("td");
-        var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
-        var quantity = parseFloat(rowCells[5].innerText); // Assuming the quantity is in the 2nd column
-        intakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); // Add total value
-        var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 6th column
-        intakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Add weighted quantity to total weight if it's a valid number
+        var valuePerItem = parseFloat(rowCells[2].innerText); 
+        var quantity = parseFloat(rowCells[5].innerText); 
+        intakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); 
+        var weight = parseFloat(rowCells[3].innerText); 
+        intakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); 
     }
     document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
-    document.getElementById("intake-total-weight").innerText = "Total Weight: " + intakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
+    document.getElementById("intake-total-weight").innerText = "Total Weight: " + intakeTotalWeight.toFixed(2) + " lbs"; 
 }
 
 function calculateOuttakeTotal(filteredRows) {
     var outtakeTotal = 0;
-    var outtakeTotalWeight = 0; // Initialize total weight variable
+    var outtakeTotalWeight = 0; 
     for (var j = 0; j < filteredRows.length; j++) {
         var rowCells = filteredRows[j].getElementsByTagName("td");
-        var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
-        var quantity = parseFloat(rowCells[5].innerText); // Assuming the quantity is in the 2nd column
-        outtakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); // Add total value
-        var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 4th column
-        outtakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Add weighted quantity to total weight if it's a valid number
+        var valuePerItem = parseFloat(rowCells[2].innerText); 
+        var quantity = parseFloat(rowCells[5].innerText); 
+        outtakeTotal += isNaN(valuePerItem) ? 0 : (valuePerItem * quantity); 
+        var weight = parseFloat(rowCells[3].innerText); 
+        outtakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); 
     }
     document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
-    document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
+    document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; 
 }
 
 window.onload = function() {
-        toggleReport(); 
-        filterIntakeByDate();
-        filterOuttakeByDate();
-        toggleClearIntakeDates();
-        toggleClearOuttakeDates();
-        sortTableByDate('intake-table', 4); // Sort intake table by timestamp column
-         sortTableByDate('outtake-table', 5);
-    }
+    toggleReport(); 
+    filterIntakeByDate();
+    filterOuttakeByDate();
+    toggleClearIntakeDates();
+    toggleClearOuttakeDates();
+    sortTableByDate('intake-table', 4); 
+    sortTableByDate('outtake-table', 5);
+}
 
 document.getElementById("intake-search-filter").addEventListener("input", searchIntakeTable);
 document.getElementById("outtake-search-filter").addEventListener("input", searchOuttakeTable);
@@ -421,7 +412,6 @@ function printIntakeTable() {
     var intakeTotalWeight = document.getElementById("intake-total-weight").outerHTML;
     var printContents = intakeTable + intakeTotal + intakeTotalWeight;
 
-    // Open a new window
     var printWindow = window.open('', '_blank');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Intake Table Print</title>');
@@ -445,7 +435,6 @@ function printOuttakeTable() {
     var outtakeTotalWeight = document.getElementById("outtake-total-weight").outerHTML;
     var printContents = outtakeTable + outtakeTotal + outtakeTotalWeight;
 
-    // Open a new window
     var printWindow = window.open('', '_blank');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Outtake Table Print</title>');
@@ -502,37 +491,36 @@ function toggleClearOuttakeDates() {
     }
 }
 function sortTableByDate(tableId, column) {
-    var table, rows, switching, i, x, y, shouldSwitch;
-    table = document.getElementById(tableId);
-    switching = true;
-    /* Make a loop that will continue until no switching has been done: */
-    while (switching) {
-        // Start by saying: no switching is done:
-        switching = false;
-        rows = table.rows;
-        /* Loop through all table rows (except the first, which contains table headers): */
-        for (i = 1; i < (rows.length - 1); i++) {
-            // Start by saying there should be no switching:
-            shouldSwitch = false;
-            /* Get the two elements you want to compare, one from current row and one from the next: */
-            x = rows[i].getElementsByTagName("td")[column];
-            y = rows[i + 1].getElementsByTagName("td")[column];
-            /* Check if the two rows should switch place, based on the direction, asc or desc: */
-            if (x && y) {
-                if (new Date(x.textContent) > new Date(y.textContent)) {
-                    // If so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById(tableId);
+        switching = true;
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("td")[column];
+                y = rows[i + 1].getElementsByTagName("td")[column];
+                if (x && y) {
+                    if (new Date(x.textContent) > new Date(y.textContent)) {
+                        shouldSwitch = true;
+                        break;
+                    }
                 }
             }
-        }
-        if (shouldSwitch) {
-            /* If a switch has been marked, make the switch and mark that a switch has been done: */
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
         }
     }
-}
+
+    window.onload = function() {
+        sortTableByDate('intake-table', 4);
+    };
+    window.onload = function() {
+        sortTableByDate('outtake-table', 4);
+    };
 function deleteTransaction(transactionId, type) {
     Swal.fire({
         title: 'Are you sure?',
