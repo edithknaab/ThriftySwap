@@ -94,7 +94,7 @@ def delete_item():
     inventory_item = Inventory.query.get(item_id)
 
     if inventory_item:
-        inventory_item.is_deleted = True  # mark as deleted
+        inventory_item.is_deleted = True  
         db.session.commit()
         return jsonify({'success': True, 'message': 'Item deleted successfully'})
     else:
@@ -108,7 +108,7 @@ def ss_delete_item():
     swapshop_item = SwapShopInventory.query.get(item_id)
 
     if swapshop_item:
-        swapshop_item.is_deleted = True  # mark as deleted
+        swapshop_item.is_deleted = True  
         db.session.commit()
         return jsonify({'success': True, 'message': 'Item deleted successfully'})
     else:
@@ -498,29 +498,24 @@ def edit_intake_transaction():
     transaction_id = request.json.get('transaction_id')
     donor_info = request.json.get('donor_info')
 
-    # Check if the required parameters are provided
     if not transaction_id or not donor_info:
         return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
 
-    # Check if the transaction ID is valid
     try:
         transaction_id = int(transaction_id)
     except ValueError:
         return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
 
-    # Check if the donor info is valid
     if not donor_info or len(donor_info) > 100:
         return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
 
     transaction = IntakeTransaction.query.get(transaction_id)
 
-    # Check if the transaction exists
     if transaction is None:
         return jsonify({'status': 'error', 'message': 'Record not found'}), 404
 
     transaction.donor_info = donor_info
 
-    # Handle database errors
     try:
         db.session.commit()
     except Exception as e:
@@ -533,29 +528,24 @@ def edit_outtake_transaction():
     transaction_id = request.json.get('transaction_id')
     donor_info = request.json.get('donor_info')
 
-    # Check if the required parameters are provided
     if not transaction_id or not donor_info:
         return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
 
-    # Check if the transaction ID is valid
     try:
         transaction_id = int(transaction_id)
     except ValueError:
         return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
 
-    # Check if the donor info is valid
     if not donor_info or len(donor_info) > 100:
         return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
 
     transaction = OuttakeTransaction.query.get(transaction_id)
 
-    # Check if the transaction exists
     if transaction is None:
         return jsonify({'status': 'error', 'message': 'Record not found'}), 404
 
     transaction.donor_info = donor_info
 
-    # Handle database errors
     try:
         db.session.commit()
     except Exception as e:
@@ -605,7 +595,7 @@ def create_intake_transaction():
 @app.route('/swap_shop_dashboard')
 @login_required
 def swap_shop_dashboard():
-    # retrieve items and donor info for the swap shop dashboard
+    
     items = SwapShopInventory.query.all()
     donor_info = SwapShopIntakeTransaction.query.all()
     return render_template('dashboard_swap_shop.html', items=items, donor_info=donor_info)
@@ -614,7 +604,7 @@ def swap_shop_dashboard():
 @login_required
 def add_item_swap_shop():
     if request.method == 'POST' and request.is_json:
-        # Process JSON request
+        
         data = request.get_json()
         item_name = data.get('item_name')
         material = data.get('material')
@@ -649,7 +639,7 @@ def add_item_swap_shop():
             return jsonify({'success': False, 'message': f'Error adding item to Swap Shop: {str(e)}'})
 
     else:
-        # Handle form submission
+        
         form = SSItemForm()
         if form.validate_on_submit():
             try:
@@ -724,29 +714,22 @@ def edit_swapshop_intake_transaction():
     transaction_id = request.json.get('transaction_id')
     donor_info = request.json.get('donor_info')
 
-    # Check if the required parameters are provided
     if not transaction_id or not donor_info:
         return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
 
-    # Check if the transaction ID is valid
     try:
         transaction_id = int(transaction_id)
     except ValueError:
         return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
 
-    # Check if the donor info is valid
     if not donor_info or len(donor_info) > 100:
         return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
 
     transaction = SwapShopIntakeTransaction.query.get(transaction_id)
-
-    # Check if the transaction exists
     if transaction is None:
         return jsonify({'status': 'error', 'message': 'Record not found'}), 404
 
     transaction.donor_info = donor_info
-
-    # Handle database errors
     try:
         db.session.commit()
     except Exception as e:
@@ -780,29 +763,24 @@ def edit_swapshop_outtake_transaction():
     transaction_id = request.json.get('transaction_id')
     donor_info = request.json.get('donor_info')
 
-    # Check if the required parameters are provided
     if not transaction_id or not donor_info:
         return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
 
-    # Check if the transaction ID is valid
     try:
         transaction_id = int(transaction_id)
     except ValueError:
         return jsonify({'status': 'error', 'message': 'Invalid transaction ID'}), 400
 
-    # Check if the donor info is valid
     if not donor_info or len(donor_info) > 100:
         return jsonify({'status': 'error', 'message': 'Invalid donor info'}), 400
 
     transaction = SwapShopOuttakeTransaction.query.get(transaction_id)
 
-    # Check if the transaction exists
     if transaction is None:
         return jsonify({'status': 'error', 'message': 'Record not found'}), 404
 
     transaction.donor_info = donor_info
 
-    # Handle database errors
     try:
         db.session.commit()
     except Exception as e:
@@ -882,7 +860,7 @@ def update_quantity_ss():
                 timestamp=datetime.utcnow()
             )
             db.session.add(intake_transaction)
-            # Add the quantity to the existing stock
+            
             inventory_item.stock += quantity_to_add  
             db.session.commit()
             return jsonify({'success': True, 'message': 'Quantity updated successfully'})
@@ -907,16 +885,17 @@ def profile_swap_shop():
     user_store = Store.query.get(current_user.store_id)
     return render_template('profile_swap_shop.html', user=current_user, store=user_store)
 
+#delete routes for thriftyowlrecords
 @app.route('/delete_intake_transaction', methods=['POST'])
 def delete_intake_transaction():
     data = request.get_json()
     transaction_id = data.get('transaction_id')
 
     try:
-        # Fetch the transaction to be deleted
+        
         transaction = IntakeTransaction.query.get(transaction_id)
         if transaction:
-            # Delete the transaction
+            
             db.session.delete(transaction)
             db.session.commit()
             return jsonify({'status': 'success'})
@@ -932,10 +911,8 @@ def delete_outtake_transaction():
     transaction_id = data.get('transaction_id')
 
     try:
-        # Fetch the transaction to be deleted
         transaction = OuttakeTransaction.query.get(transaction_id)
         if transaction:
-            # Delete the transaction
             db.session.delete(transaction)
             db.session.commit()
             return jsonify({'status': 'success'})
@@ -944,14 +921,13 @@ def delete_outtake_transaction():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
     
-
+#delete routes for swapshoprecords
 @app.route('/delete_swapshop_intake_transaction', methods=['POST'])
 def delete_swapshop_intake_transaction():
     data = request.get_json()
     transaction_id = data.get('transaction_id')
 
     try:
-        # Fetch the transaction to be deleted
         transaction = SwapShopIntakeTransaction.query.get(transaction_id)
         if transaction:
             db.session.delete(transaction)
@@ -970,7 +946,6 @@ def delete_swapshop_outtake_transaction():
     transaction_id = data.get('transaction_id')
 
     try:
-        # Fetch the transaction to be deleted
         transaction = SwapShopOuttakeTransaction.query.get(transaction_id)
         if transaction:
             db.session.delete(transaction)

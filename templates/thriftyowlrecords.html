@@ -47,7 +47,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thrifty Owl Inventory Report</title>
 </head>
-<body onload="sortTableByDate('intake-table', 2);">
+<body onload="sortTableByDate('intake-table', 4); sortTableByDate('outtake-table', 4);">
     <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700;">Thrifty Owl Inventory Report</h2>
     <div class="mb-3">
         <label for="report-type" class="form-label">Select Report Type:</label>
@@ -191,8 +191,6 @@
                     var donorInfo = donorResult.value;
                     var url = type === 'intake' ? '/edit_intake_transaction' : '/edit_outtake_transaction';
                     var data = { 'transaction_id': transactionId, 'donor_info': donorInfo };
-
-                    // Store the current report type in the local storage before reloading the page
                     localStorage.setItem('reportType', type);
 
                     fetch(url, {
@@ -233,14 +231,10 @@
         }
         function toggleReport() {
             var reportType = document.getElementById("report-type").value;
-
-            // Check if there is a report type stored in the local storage
             var storedReportType = localStorage.getItem('reportType');
             if (storedReportType) {
                 reportType = storedReportType;
-                // Set the select value to the stored report type
                 document.getElementById("report-type").value = reportType;
-                // Remove the stored report type from the local storage
                 localStorage.removeItem('reportType');
             }
 
@@ -282,8 +276,8 @@ function searchOuttakeTable() {
     table = document.getElementById("outtake-table");
     tr = table.getElementsByTagName("tr");
     for (i = 0; i < tr.length; i++) {
-        var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
-        var recipientInfo_td = tr[i].getElementsByTagName("td")[6]; // Index 3 for recipient information
+        var itemName_td = tr[i].getElementsByTagName("td")[0]; 
+        var recipientInfo_td = tr[i].getElementsByTagName("td")[6]; 
         if (itemName_td || recipientInfo_td) {
             var itemName_text = itemName_td.textContent || itemName_td.innerText;
             var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
@@ -294,13 +288,13 @@ function searchOuttakeTable() {
             }
         }
     }
-    calculateOuttakeTotal(); // Recalculate the total after filtering
+    calculateOuttakeTotal(); 
 }
 
         
 function calculateIntakeTotal() {
     var intakeTotal = 0;
-    var intakeTotalWeight = 0; // Initialize intakeTotalWeight variable
+    var intakeTotalWeight = 0; 
     var table = document.getElementById("intake-table");
     var rows = table.getElementsByTagName("tr");
     for (var i = 1; i < rows.length; i++) {
@@ -312,32 +306,32 @@ function calculateIntakeTotal() {
             intakeTotal += totalValue;
 
             var weight = parseFloat(rowCells[3].innerText);
-            intakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); // Update intakeTotalWeight
+            intakeTotalWeight += isNaN(weight) ? 0 : (weight * quantity); 
         }
     }
-    console.log("Intake Total:", intakeTotal); // Log intakeTotal to console
-    console.log("Intake Total Weight:", intakeTotalWeight); // Log intakeTotalWeight to console
+    console.log("Intake Total:", intakeTotal); 
+    console.log("Intake Total Weight:", intakeTotalWeight); 
     document.getElementById("intake-total").innerText = "Total Value: $" + intakeTotal.toFixed(2);
-    document.getElementById("intake-total-weight").innerText = "Total Weight: " + intakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
+    document.getElementById("intake-total-weight").innerText = "Total Weight: " + intakeTotalWeight.toFixed(2) + " lbs"; 
 }
 function calculateOuttakeTotal() {
     var outtakeTotal = 0;
-    var outtakeTotalWeight = 0; // Initialize total weight variable
+    var outtakeTotalWeight = 0; 
     var table = document.getElementById("outtake-table");
     var rows = table.getElementsByTagName("tr");
     for (var j = 1; j < rows.length; j++) {
         if (rows[j].style.display !== "none") { 
             var rowCells = rows[j].getElementsByTagName("td");
-            var quantity = parseFloat(rowCells[5].innerText); // Assuming the quantity is in the 2nd column
-            var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
-            var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 3rd column
+            var quantity = parseFloat(rowCells[5].innerText); 
+            var valuePerItem = parseFloat(rowCells[2].innerText); 
+            var weight = parseFloat(rowCells[3].innerText); 
 
             outtakeTotal += isNaN(quantity) || isNaN(valuePerItem) ? 0 : (quantity * valuePerItem);
             outtakeTotalWeight += isNaN(quantity) || isNaN(weight) ? 0 : (quantity * weight);
         }
     }
     document.getElementById("outtake-total").innerText = "Total Value: $" + outtakeTotal.toFixed(2);
-    document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; // Display total weight
+    document.getElementById("outtake-total-weight").innerText = "Total Weight: " + outtakeTotalWeight.toFixed(2) + " lbs"; 
 }
 
 
@@ -348,17 +342,16 @@ function filterIntakeByDate() {
     filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00') : null;
     filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59') : null;
 
-    // Log the start and end dates to the console
     console.log('Start date:', filterStart);
     console.log('End date:', filterEnd);
 
     table = document.getElementById("intake-table");
     tr = table.getElementsByTagName("tr");
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[4]; // Index 4 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[4]; 
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
-            var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
+            var timestamp = new Date(timestamp_text); 
             if ((filterStart === null && filterEnd === null) || (timestamp >= filterStart && timestamp <= filterEnd)) {
                 tr[i].style.display = "";
             } else {
@@ -366,7 +359,7 @@ function filterIntakeByDate() {
             }
         }
     }
-    calculateIntakeTotal(); // Recalculate the total after filtering
+    calculateIntakeTotal(); 
 }
 
 
@@ -374,7 +367,7 @@ function filterIntakeByDate() {
             document.getElementById("intake-date-filter-start").value = "";
             document.getElementById("intake-date-filter-end").value = "";
             filterIntakeByDate();
-            toggleClearIntakeDates(); // Call this function to hide the button after clearing the dates
+            toggleClearIntakeDates(); 
         }
 
         function toggleClearIntakeDates() {
@@ -396,17 +389,16 @@ function filterOuttakeByDate() {
     filterStart = inputStart.value ? new Date(inputStart.value + 'T00:00:00') : null;
     filterEnd = inputEnd.value ? new Date(inputEnd.value + 'T23:59:59') : null;
 
-    // Log the start and end dates to the console
     console.log('Start date:', filterStart);
     console.log('End date:', filterEnd);
 
     table = document.getElementById("outtake-table");
     tr = table.getElementsByTagName("tr");
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[5]; // Index 5 for timestamp
+        var timestamp_td = tr[i].getElementsByTagName("td")[5]; 
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
-            var timestamp = new Date(timestamp_text); // Parse the timestamp string into a Date object
+            var timestamp = new Date(timestamp_text); 
             if ((filterStart === null && filterEnd === null) || (timestamp >= filterStart && timestamp <= filterEnd)) {
                 tr[i].style.display = "";
             } else {
@@ -414,7 +406,7 @@ function filterOuttakeByDate() {
             }
         }
     }
-    calculateOuttakeTotal(); // Recalculate the total after filtering
+    calculateOuttakeTotal(); 
 }
 
 
@@ -422,7 +414,7 @@ function filterOuttakeByDate() {
             document.getElementById("outtake-date-filter-start").value = "";
             document.getElementById("outtake-date-filter-end").value = "";
             filterOuttakeByDate();
-            toggleClearOuttakeDates(); // Call this function to hide the button after clearing the dates
+            toggleClearOuttakeDates(); 
         }
 
         function toggleClearOuttakeDates() {
@@ -466,7 +458,6 @@ function printOuttakeTable() {
     var outtakeTotalWeight = document.getElementById("outtake-total-weight").outerHTML;
     var printContents = outtakeTable + outtakeTotal + outtakeTotalWeight;
 
-    // Open a new window
     var printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Outtake Table Print</title>');
@@ -492,7 +483,7 @@ function printOuttakeTable() {
             calculateOuttakeTotal();
             toggleClearIntakeDates();
             toggleClearOuttakeDates();
-            sortTableByDate('intake-table', 4); // Sort intake table by timestamp column
+            sortTableByDate('intake-table', 4); 
             sortTableByDate('outtake-table', 5);
         };
 
@@ -501,38 +492,36 @@ function printOuttakeTable() {
             filterOuttakeByDate();
         });
 
-        function sortTableByDate(tableId, column) {
-    var table, rows, switching, i, x, y, shouldSwitch;
-    table = document.getElementById(tableId);
-    switching = true;
-    /* Make a loop that will continue until no switching has been done: */
-    while (switching) {
-        // Start by saying: no switching is done:
-        switching = false;
-        rows = table.rows;
-        /* Loop through all table rows (except the first, which contains table headers): */
-        for (i = 1; i < (rows.length - 1); i++) {
-            // Start by saying there should be no switching:
-            shouldSwitch = false;
-            /* Get the two elements you want to compare, one from current row and one from the next: */
-            x = rows[i].getElementsByTagName("td")[column];
-            y = rows[i + 1].getElementsByTagName("td")[column];
-            /* Check if the two rows should switch place, based on the direction, asc or desc: */
-            if (x && y) {
-                if (new Date(x.textContent) > new Date(y.textContent)) {
-                    // If so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
+    function sortTableByDate(tableId, column) {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById(tableId);
+        switching = true;
+        
+        while (switching) {
+
+            switching = false;
+            rows = table.rows;
+            
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("td")[column];
+                y = rows[i + 1].getElementsByTagName("td")[column];
+                if (x && y) {
+                    if (new Date(x.textContent) > new Date(y.textContent)) {
+                        shouldSwitch = true;
+                        break;
+                    }
                 }
             }
-        }
-        if (shouldSwitch) {
-            /* If a switch has been marked, make the switch and mark that a switch has been done: */
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
         }
     }
-}
+    window.onload = function() {
+        sortTableByDate('myTable', 0);
+    };
 function deleteTransaction(transactionId, type) {
     Swal.fire({
         title: 'Are you sure?',

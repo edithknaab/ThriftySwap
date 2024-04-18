@@ -19,11 +19,11 @@
 
     .sortable-th {
         cursor: pointer;
-        transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+        transition: background-color 0.3s ease; 
     }
 
     .sortable-th:hover {
-        background-color: #f5c445; /* Slightly darker shade on hover */
+        background-color: #f5c445; 
     }
 
     .sort-icon {
@@ -63,7 +63,7 @@
                 <tr>
                     <th class="sortable-th" onclick="sortTable(0)">Item Name <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(1)">Material <span class="sort-icon">&uarr;&darr;</span></th>
-                    <th class="sortable-th" onclick="sortTable(2)">Weight (lb) <span class="sort-icon">&uarr;&darr;</span></th>
+                    <th class="sortable-th" onclick="sortTable(2)">Weight (lbs) <span class="sort-icon">&uarr;&darr;</span></th>
                     <th class="sortable-th" onclick="sortTable(3)">Category <span class="sort-icon">&uarr;&darr;</span></th>
                     <th>Stock</th>
                     <th class="sortable-th" onclick="sortTable(5)">Value Per Item <span class="sort-icon">&uarr;&darr;</span></th>
@@ -203,7 +203,7 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
                 weight: weightFloat,
                 value_per_item: valueFloat,
                 type: inputs.type,
-                stock: 0 // hardcode stock to zero
+                stock: 0 // changed to intial stock amount 
             };
         },
         showCancelButton: true,
@@ -223,7 +223,7 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
             .then(data => {
                 if (data.success) {
                     console.log('Item added successfully');
-                    const itemId = data.item_id; // item_id from the response
+                    const itemId = data.item_id; 
                     // Prompt for initial stock quantity
                     Swal.fire({
                         title: 'Enter the initial stock amount:',
@@ -242,14 +242,14 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
                             Swal.showValidationMessage("Please enter a valid stock amount");
                             return false;
                         }
-                        return parseInt(stockValue); // Return the parsed integer if validation passes
+                        return parseInt(stockValue); 
                     }
                     }).then((quantityResult) => {
                         if (quantityResult.dismiss) {
                             return;
                         }
                         if (quantityResult.isConfirmed && quantityResult.value) {
-                            // Prompt for donor information
+                            
                             Swal.fire({
                                 title: 'Enter donor:',
                                 input: 'text',
@@ -267,7 +267,6 @@ document.getElementById('addItemSwapShopBtn').addEventListener('click', function
                             }).then((donorResult) => {
                                 const initialStock = parseInt(quantityResult.value);
                                 const donorInfo = donorResult.value;
-                                // Post the stock and donor information to the server
                                 fetch('/update_quantity_ss', {
                                     method: 'POST',
                                     headers: {
@@ -387,7 +386,6 @@ function fetchInventory() {
                 `;
                 inventoryBody.appendChild(row);
 
-                // Accumulate total weight and total value
                 const stock = parseInt(item.stock);
                 if (!isNaN(stock)) {
                     const weightedWeight = parseFloat(item.weight) * stock;
@@ -397,7 +395,6 @@ function fetchInventory() {
                 }
             });
 
-            // Update total weight and total value
             document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
             document.getElementById('totalValue').textContent = totalValue.toFixed(2);
         })
@@ -470,7 +467,7 @@ function releaseItem(itemId, itemName) {
                     const releaseData = {
                         item_id: itemId, 
                         quantity: parseInt(quantityResult.value), 
-                        donor_info: recipientResult.value // Update field name to donor_info
+                        donor_info: recipientResult.value 
                     };
                     fetch('/release_item_ss', {
                         method: 'POST',
@@ -498,9 +495,6 @@ function releaseItem(itemId, itemName) {
         }
     });
 }
-
-
-
 
 function deleteItem(itemId) {
     Swal.fire({
@@ -673,16 +667,14 @@ function sortTable(columnIndex) {
             x = rows[i].getElementsByTagName("TD")[columnIndex];
             y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
 
-            // Determine if we need to parse as float for "Weight" and "Value Per Item" columns
             let xVal, yVal;
-            if (columnIndex === 2 || columnIndex === 5) { // Numeric sorting for "Weight" and "Value Per Item"
+            if (columnIndex === 2 || columnIndex === 5) { 
                 xVal = parseFloat(x.innerHTML) || 0;
                 yVal = parseFloat(y.innerHTML) || 0;
-            } else { // Alphabetical sorting for other columns
+            } else { 
                 xVal = x.innerHTML.toLowerCase();
                 yVal = y.innerHTML.toLowerCase();
             }
-
             // Ascending or descending comparison
             if (dir == "asc") {
                 if (xVal > yVal) {
@@ -705,7 +697,7 @@ function sortTable(columnIndex) {
                 dir = "desc";
                 switching = true;
             } else if (switchcount !== 0 && dir == "desc") {
-                dir = "asc"; // Reset direction after a full cycle
+                dir = "asc"; 
             }
         }
     }
@@ -726,7 +718,6 @@ document.getElementById('searchInput').addEventListener('input', function() {
         }
     });
 
-    // Recalculate totals based on filtered table
     calculateTotals();
 });
 
@@ -740,17 +731,16 @@ function calculateTotals() {
         if (row.style.display !== 'none') {
             const weight = parseFloat(row.querySelector('td:nth-child(3)').textContent);
             const value = parseFloat(row.querySelector('td:nth-child(6)').textContent);
-            const stock = parseInt(row.querySelector('td:nth-child(5) input').value); // Get the stock input value
+            const stock = parseInt(row.querySelector('td:nth-child(5) input').value); 
             if (!isNaN(weight) && !isNaN(value) && !isNaN(stock)) {
-                const weightedWeight = weight * stock; // Calculate weighted weight
-                const weightedValue = value * stock; // Calculate weighted value
-                totalWeight += weightedWeight; // Accumulate weighted weight
-                totalValue += weightedValue; // Accumulate weighted value
+                const weightedWeight = weight * stock; 
+                const weightedValue = value * stock; 
+                totalWeight += weightedWeight; 
+                totalValue += weightedValue; 
             }
         }
     });
 
-    // Update total weight and total value
     document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
     document.getElementById('totalValue').textContent = totalValue.toFixed(2);
 }
