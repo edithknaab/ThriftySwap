@@ -134,8 +134,8 @@
                     <th>Material</th>
                     <th>Value Per Item</th>
                     <th>Weight</th>
-                    <th>Amount Taken</th>
                     <th>Timestamp</th>
+                    <th>Amount Taken</th>
                     <th>Recipient Information</th>
                 </tr>
             </thead>
@@ -146,11 +146,11 @@
                     <td>{{ outtake_transaction.inventory.material }}</td> 
                     <td>{{ outtake_transaction.inventory.value_per_item }}</td>
                     <td>{{ outtake_transaction.inventory.weight }}</td> 
-                    <td>{{ outtake_transaction.quantity }}</td> 
                     <td>
                         {% set timestamp = outtake_transaction.timestamp - timedelta(hours=4) %}
                         {{ timestamp.strftime("%B %-d, %Y %I:%M %p") }}
                     </td>
+                    <td>{{ outtake_transaction.quantity }}</td> 
                     <td>
                         {{ outtake_transaction.donor_info }}
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
@@ -268,7 +268,7 @@
             calculateIntakeTotal(); 
         }
 
-        function searchOuttakeTable() {
+function searchOuttakeTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("outtake-search-filter");
     filter = input.value.toUpperCase();
@@ -276,7 +276,7 @@
     tr = table.getElementsByTagName("tr");
     for (i = 0; i < tr.length; i++) {
         var itemName_td = tr[i].getElementsByTagName("td")[0]; // Index 0 for item name
-        var recipientInfo_td = tr[i].getElementsByTagName("td")[3]; // Index 3 for recipient information
+        var recipientInfo_td = tr[i].getElementsByTagName("td")[6]; // Index 3 for recipient information
         if (itemName_td || recipientInfo_td) {
             var itemName_text = itemName_td.textContent || itemName_td.innerText;
             var recipientInfo_text = recipientInfo_td.textContent || recipientInfo_td.innerText;
@@ -321,7 +321,7 @@ function calculateOuttakeTotal() {
     for (var j = 1; j < rows.length; j++) {
         if (rows[j].style.display !== "none") { 
             var rowCells = rows[j].getElementsByTagName("td");
-            var quantity = parseFloat(rowCells[4].innerText); // Assuming the quantity is in the 2nd column
+            var quantity = parseFloat(rowCells[5].innerText); // Assuming the quantity is in the 2nd column
             var valuePerItem = parseFloat(rowCells[2].innerText); // Assuming the value per item is in the 5th column
             var weight = parseFloat(rowCells[3].innerText); // Assuming the weight is in the 3rd column
 
