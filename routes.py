@@ -906,3 +906,78 @@ def profile_swap_shop():
 
     user_store = Store.query.get(current_user.store_id)
     return render_template('profile_swap_shop.html', user=current_user, store=user_store)
+
+@app.route('/delete_intake_transaction', methods=['POST'])
+def delete_intake_transaction():
+    data = request.get_json()
+    transaction_id = data.get('transaction_id')
+
+    try:
+        # Fetch the transaction to be deleted
+        transaction = IntakeTransaction.query.get(transaction_id)
+        if transaction:
+            # Delete the transaction
+            db.session.delete(transaction)
+            db.session.commit()
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Transaction not found'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+
+@app.route('/delete_outtake_transaction', methods=['POST'])
+def delete_outtake_transaction():
+    data = request.get_json()
+    transaction_id = data.get('transaction_id')
+
+    try:
+        # Fetch the transaction to be deleted
+        transaction = OuttakeTransaction.query.get(transaction_id)
+        if transaction:
+            # Delete the transaction
+            db.session.delete(transaction)
+            db.session.commit()
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Transaction not found'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+    
+
+@app.route('/delete_swapshop_intake_transaction', methods=['POST'])
+def delete_swapshop_intake_transaction():
+    data = request.get_json()
+    transaction_id = data.get('transaction_id')
+
+    try:
+        # Fetch the transaction to be deleted
+        transaction = SwapShopIntakeTransaction.query.get(transaction_id)
+        if transaction:
+            db.session.delete(transaction)
+            db.session.commit()
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Transaction not found'})
+    except Exception as e:
+        app.logger.error("Failed to delete intake transaction: %s", str(e))
+        return jsonify({'status': 'error', 'message': 'Failed to delete transaction. Please try again later.'})
+
+
+@app.route('/delete_swapshop_outtake_transaction', methods=['POST'])
+def delete_swapshop_outtake_transaction():
+    data = request.get_json()
+    transaction_id = data.get('transaction_id')
+
+    try:
+        # Fetch the transaction to be deleted
+        transaction = SwapShopOuttakeTransaction.query.get(transaction_id)
+        if transaction:
+            db.session.delete(transaction)
+            db.session.commit()
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Transaction not found'})
+    except Exception as e:
+        app.logger.error("Failed to delete outtake transaction: %s", str(e))
+        return jsonify({'status': 'error', 'message': 'Failed to delete transaction. Please try again later.'})

@@ -76,6 +76,7 @@
                         <th>Timestamp</th>
                         <th>Amount Donated</th>
                         <th>Donor Information</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,6 +96,9 @@
                             {{ intake_transaction.donor_info }}
                             <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ intake_transaction.id }}', 'intake')">   
                         </td>
+                        <td>
+                            <img src="/static/images/delete.png" alt="Delete" style="width: 20px; height: 20px; cursor: pointer;" onclick="deleteTransaction('{{ intake_transaction.id }}', 'intake')">
+                        </td>                        
                     </tr>
                     {% endfor %}
                     {% endfor %}
@@ -130,6 +134,7 @@
                     <th>Timestamp</th>
                     <th>Amount Taken</th>
                     <th>Recipient Information</th>
+                    <th>Delete</th>
                 </tr>
             </thead>
             <tbody>
@@ -148,6 +153,9 @@
                         {{ outtake_transaction.donor_info }}
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
                     </td>
+                    <td>
+                        <img src="/static/images/delete.png" alt="Delete" style="width: 20px; height: 20px; cursor: pointer;" onclick="deleteTransaction('{{ outtake_transaction.id }}', 'intake')">
+                    </td>                    
                 </tr>
                 {% endfor %}
             </tbody>
@@ -525,6 +533,57 @@ function sortTableByDate(tableId, column) {
         }
     }
 }
+function deleteTransaction(transactionId, type) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var url = type === 'intake' ? '/delete_swapshop_intake_transaction' : '/delete_swapshop_outtake_transaction';
+            var data = { 'transaction_id': transactionId };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire(
+                        'Deleted!',
+                        'Your transaction has been deleted.',
+                        'success'
+                    ).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        'Failed to delete transaction: ' + data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong!',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
 </script>
 </body>
 </html>

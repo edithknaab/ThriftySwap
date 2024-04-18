@@ -82,7 +82,7 @@
                     <th>Timestamp</th>
                     <th>Amount Donated</th>
                     <th>Donor Information</th>
-                </tr>
+                    <th>Delete</th> 
             </thead>
             <tbody>
                 {% for item, intake_data in intake_info.items() %}
@@ -100,6 +100,9 @@
                     <td>
                         {{ intake_transaction.donor_info }}
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ intake_transaction.id }}', 'intake')">   
+                    </td>
+                    <td>
+                        <img src="/static/images/delete.png" alt="Delete" style="width: 20px; height: 20px; cursor: pointer;" onclick="deleteTransaction('{{ intake_transaction.id }}', 'intake')">
                     </td>
                 </tr>
                 {% endfor %}
@@ -137,6 +140,7 @@
                     <th>Timestamp</th>
                     <th>Amount Taken</th>
                     <th>Recipient Information</th>
+                    <th>Delete</th>
                 </tr>
             </thead>
             <tbody>
@@ -154,6 +158,9 @@
                     <td>
                         {{ outtake_transaction.donor_info }}
                         <img src="/static/images/edit.png" alt="Edit" style="width: 20px; height: 20px; cursor: pointer;" onclick="editTransaction('{{ outtake_transaction.id }}', 'outtake')">
+                    </td>
+                    <td>
+                        <img src="/static/images/delete.png" alt="Delete" style="width: 20px; height: 20px; cursor: pointer;" onclick="deleteTransaction('{{ outtake_transaction.id }}', 'outtake')">
                     </td>                                          
                 </tr>
                 {% endfor %}
@@ -436,7 +443,7 @@ function printIntakeTable() {
     var printContents = intakeTable + intakeTotal + intakeTotalWeight;
 
     // Open a new window
-    var printWindow = window.open('', '_blank');
+    var printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Intake Table Print</title>');
     printWindow.document.write('<style>@media print {');
@@ -460,7 +467,7 @@ function printOuttakeTable() {
     var printContents = outtakeTable + outtakeTotal + outtakeTotalWeight;
 
     // Open a new window
-    var printWindow = window.open('', '_blank');
+    var printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Outtake Table Print</title>');
     printWindow.document.write('<style>@media print {');
@@ -526,6 +533,57 @@ function printOuttakeTable() {
         }
     }
 }
+function deleteTransaction(transactionId, type) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var url = type === 'intake' ? '/delete_intake_transaction' : '/delete_outtake_transaction';
+            var data = { 'transaction_id': transactionId };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire(
+                        'Deleted!',
+                        'Your transaction has been deleted.',
+                        'success'
+                    ).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        'Failed to delete transaction: ' + data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong!',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
     </script>
 </body>
 </html>
