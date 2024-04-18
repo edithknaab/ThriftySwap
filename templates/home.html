@@ -13,10 +13,11 @@
         {% if current_user.is_authenticated %}
             <h1>Welcome, {{ current_user.username }}!</h1>
             <h2>Please select inventory</h2>
-            <a class="btn" href="{{ url_for('dashboard') }}">ThriftyOwl</a><br>
-            <a class="btn" href="{{ url_for('swap_shop_dashboard') }}">SwapShop</a><br>
+            <a class="btn" href="{{ url_for('dashboard') }}">Thrifty Owl</a><br>
+            <a class="btn" href="{{ url_for('swap_shop_dashboard') }}">Swap Shop</a><br>
         {% else %}
-            <h1>Login Authentication System in Flask.</h1>
+            <h1>Thrifty Owl & Swap Shop</h1>
+            <h1 class="last-heading">Inventory Manager</h1>
             <a class="btn" href="{{ url_for('login') }}">Login</a><br>
             <a class="btn" href="{{ url_for('register') }}">Register</a><br>
         {% endif %}

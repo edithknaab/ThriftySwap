@@ -75,11 +75,11 @@
         <form id="uploadForm" class="upload-form" action="{{ url_for('profile') }}" method="post" enctype="multipart/form-data" style="display: none;" onsubmit="return validateForm()">
             <input type="file" id="picture" name="picture" accept="image/*">
             <div class="upload-buttons">
-                <button type="submit" class="btn btn-primary uploadbutton">Change Profile Picture</button>
+                <button type="submit" class="btn btn-primary uploadbutton">Apply</button>
                 <button type="button" id="cancelButton" class="btn btn-primary cancelbutton">Cancel</button>
             </div>
         </form>
-        <h1 class="profile-title">User Profile</h1>
+        <h1 class="profile-title" style="margin-top: 20px;">User Profile</h1>
         <div class="profile-info">
             <p><i class="fas fa-user"></i> First Name: {{ user.first_name }}</p>
             <p><i class="fas fa-user"></i> Last Name: {{ user.last_name }}</p>

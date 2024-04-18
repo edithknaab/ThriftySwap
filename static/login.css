@@ -20,9 +20,10 @@ body {
 
 h1 {
     color: #001489;
-    font-size: 28px;
+    font-size: 24px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 h2 {
@@ -46,7 +47,7 @@ form label {
 form input[type="text"],
 form input[type="password"] {
     padding: 12px;
-    width: 100%;
+    width: 95%;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
