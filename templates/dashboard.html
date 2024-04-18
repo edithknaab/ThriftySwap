@@ -129,16 +129,34 @@ color: #e4e4e4;
 `,
         focusConfirm: false,
         preConfirm: () => {
-            if (document.getElementById('type').value === "") {
-                Swal.showValidationMessage("Please select an item type");
+            const inputs = {
+                item_name: document.getElementById('item_name').value.trim(),
+                material: document.getElementById('material').value.trim(),
+                weight: document.getElementById('weight').value.trim(),
+                value_per_item: document.getElementById('value_per_item').value.trim(),
+                type: document.getElementById('type').value.trim()
+            };
+            const missingInputs = Object.values(inputs).some(value => value === "");
+            if (missingInputs) {
+                Swal.showValidationMessage("Please enter a valid input in each field");
+                return false;
+            }
+            const weightFloat = parseFloat(inputs.weight);
+            const valueFloat = parseFloat(inputs.value_per_item);
+            if (isNaN(weightFloat)) {
+                Swal.showValidationMessage("Please enter a valid input for weight");
+                return false;
+            }
+            if (isNaN(valueFloat)) {
+                Swal.showValidationMessage("Please enter a valid input for value per item");
                 return false;
             }
             return {
-                item_name: document.getElementById('item_name').value,
-                material: document.getElementById('material').value,
-                weight: parseFloat(document.getElementById('weight').value),
-                value_per_item: parseFloat(document.getElementById('value_per_item').value),
-                type: document.getElementById('type').value,
+                item_name: inputs.item_name,
+                material: inputs.material,
+                weight: weightFloat,
+                value_per_item: valueFloat,
+                type: inputs.type,
                 stock: 0 // hardcode stock to zero
             };
         },
@@ -149,109 +167,110 @@ color: #e4e4e4;
     }).then((result) => {
         if (result.isConfirmed) {
             fetch('/add_item', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(result.value)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        console.log('Item added successfully');
-                        // Start with quantity input
-                        Swal.fire({
-                            title: 'Enter the initial stock quantity:',
-                            input: 'number',
-                            inputAttributes: {
-                                min: 1,
-                                step: 1,
-                                autocapitalize: 'off'
-                            },
-                            showCancelButton: true,
-                            confirmButtonText: 'Next',
-                            confirmButtonColor: '#001489',
-                            showLoaderOnConfirm: true,
-                        }).then((quantityResult) => {
-                            if (quantityResult.dismiss) {
-                                return;
-                            }
-                            if (quantityResult.isConfirmed && quantityResult.value) {
-                                Swal.fire({
-                                    title: 'Enter donor information:',
-                                    input: 'text',
-                                    showCancelButton: true,
-                                    confirmButtonText: 'Submit',
-                                    confirmButtonColor: '#001489',
-                                    showLoaderOnConfirm: true,
-                                    preConfirm: (donorValue) => {
-                                        if (donorValue.trim() === '') {
-                                            return 'Unknown';
-                                        }
-                                        return donorValue.trim();
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(result.value)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    console.log('Item added successfully');
+                    // Start with quantity input
+                    Swal.fire({
+                        title: 'Enter the initial stock quantity:',
+                        input: 'number',
+                        inputAttributes: {
+                            min: 1,
+                            step: 1,
+                            autocapitalize: 'off'
+                        },
+                        showCancelButton: true,
+                        confirmButtonText: 'Next',
+                        confirmButtonColor: '#001489',
+                        showLoaderOnConfirm: true,
+                    }).then((quantityResult) => {
+                        if (quantityResult.dismiss) {
+                            return;
+                        }
+                        if (quantityResult.isConfirmed && quantityResult.value) {
+                            Swal.fire({
+                                title: 'Enter donor information:',
+                                input: 'text',
+                                showCancelButton: true,
+                                confirmButtonText: 'Submit',
+                                confirmButtonColor: '#001489',
+                                showLoaderOnConfirm: true,
+                                preConfirm: (donorValue) => {
+                                    if (donorValue.trim() === '') {
+                                        return 'Unknown';
                                     }
-                                }).then((donorResult) => {
-                                    const initialStock = parseInt(quantityResult.value);
-                                    const donorInfo = donorResult.value;
-                                    fetch('/update_quantity', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                            },
-                                            body: JSON.stringify({
-                                                id: data.item.id,
-                                                quantity_to_add: initialStock,
-                                                donor_info: donorInfo
-                                            }),
-                                        })
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                Swal.fire({
-                                                    icon: 'success',
-                                                    title: 'Stock Added!',
-                                                    text: data.message,
-                                                    didClose: () => {
-                                                        location.reload();
-                                                    }
-                                                });
-                                            } else {
-                                                Swal.fire({
-                                                    icon: 'error',
-                                                    title: 'Oops...',
-                                                    text: data.message,
-                                                });
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
+                                    return donorValue.trim();
+                                }
+                            }).then((donorResult) => {
+                                const initialStock = parseInt(quantityResult.value);
+                                const donorInfo = donorResult.value;
+                                fetch('/update_quantity', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                            id: data.item.id,
+                                            quantity_to_add: initialStock,
+                                            donor_info: donorInfo
+                                        }),
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Stock Added!',
+                                                text: data.message,
+                                                didClose: () => {
+                                                    location.reload();
+                                                }
+                                            });
+                                        } else {
                                             Swal.fire({
                                                 icon: 'error',
                                                 title: 'Oops...',
-                                                text: 'Something went wrong!',
+                                                text: data.message,
                                             });
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Oops...',
+                                            text: 'Something went wrong!',
                                         });
-                                });
-                            } else if (quantityResult.isConfirmed) {
-                                Swal.fire('Please enter a valid initial stock quantity.');
-                            }
-                        });
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Fetch error:', error);
-                    Swal.fire('Error!', 'There was a problem.', 'error');
-                });
+                                    });
+                            });
+                        } else if (quantityResult.isConfirmed) {
+                            Swal.fire('Please enter a valid initial stock quantity.');
+                        }
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                Swal.fire('Error!', 'There was a problem.', 'error');
+            });
         }
     });
 });
+
 
 
 function showItemDetails(itemId) {
@@ -348,24 +367,23 @@ function updateQuantity(itemId) {
             // If dismissed, just return and do nothing
             return;
         }
-        
         if (quantityResult.isConfirmed && quantityResult.value) {
             // Then ask for donor information
             Swal.fire({
                 title: 'Enter donor information:',
                 input: 'text',
+                inputPlaceholder: 'Enter donor or leave blank for "Unknown".',
                 showCancelButton: true,
                 confirmButtonText: 'Submit',
                 confirmButtonColor: '#001489',
                 showLoaderOnConfirm: true,
-                preConfirm: (donorValue) => {
-                    if (donorValue.trim() === '') {
+                preConfirm: (donorInfo) => {
+                    if (!donorInfo) {
                         return 'Unknown';
                     }
-                    return donorValue.trim();
-                }
+                    return donorInfo;
+                },
             }).then((donorResult) => {
-                // Proceed with the update quantity logic
                 const quantityToAdd = parseInt(quantityResult.value);
                 const newQuantity = parseInt(document.getElementById(`quantity_${itemId}`).value) + quantityToAdd;
                 const donorInfo = donorResult.value;
@@ -515,10 +533,12 @@ function releaseItem(itemId, itemName) {
     }).then((quantityResult) => {
         if (quantityResult.value) {
             Swal.fire({
-                title: 'Enter recipient or blank for "Unknown":',
+                title: 'Enter recipient:',
+                inputPlaceholder: 'Enter recipient or leave blank for "Unknown".',
                 input: 'text',
                 showCancelButton: true,
                 confirmButtonText: 'Release',
+                confirmButtonColor: '#001489',
                 showLoaderOnConfirm: true,
             }).then((donorResult) => {
                 const recipientInfo = donorResult.value ? donorResult.value : "Unknown";
