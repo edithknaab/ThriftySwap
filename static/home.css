@@ -20,9 +20,14 @@ body {
 
 h1 {
     color: #001489;
-    font-size: 28px;
+    font-size: 24px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 4px;
+    margin-top: 4px;
+}
+
+.last-heading {
+    margin-bottom: 20px; /* Add more space below the heading */
 }
 
 h2 {
