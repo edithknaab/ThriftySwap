@@ -216,7 +216,7 @@ document.getElementById('addItemBtn').addEventListener('click', function() {
                                 confirmButtonColor: '#001489',
                                 showLoaderOnConfirm: true,
                                 preConfirm: (donorValue) => {
-                                    if (!donorInfo) {
+                                    if (!donorValue) {
                                         return 'Unknown';
                                     }
                                     return donorValue;
