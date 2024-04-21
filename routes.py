@@ -8,8 +8,6 @@ from werkzeug.utils import secure_filename
 from models import User, Inventory, Store, IntakeTransaction, OuttakeTransaction, SwapShopInventory, SwapShopIntakeTransaction, SwapShopOuttakeTransaction
 from app import app, db, mail
 from flask_bcrypt import Bcrypt
-from barcode import generate as generate_barcode
-from barcode.writer import ImageWriter
 from io import BytesIO
 import random
 import string
