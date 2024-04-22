@@ -394,7 +394,7 @@ function filterOuttakeByDate() {
     table = document.getElementById("outtake-table");
     tr = table.getElementsByTagName("tr");
     for (i = 0; i < tr.length; i++) {
-        var timestamp_td = tr[i].getElementsByTagName("td")[5]; 
+        var timestamp_td = tr[i].getElementsByTagName("td")[4]; 
         if (timestamp_td) {
             var timestamp_text = timestamp_td.textContent;
             var timestamp = new Date(timestamp_text); 
