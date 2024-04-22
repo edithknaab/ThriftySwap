@@ -426,17 +426,24 @@ function filterOuttakeByDate() {
                 clearDateButton.style.display = "none";
             }
         }
-function printIntakeTable() {
-    var intakeTable = document.getElementById("intake-table").outerHTML;
-    var intakeTotal = document.getElementById("intake-total").outerHTML; 
-    var intakeTotalWeight = document.getElementById("intake-total-weight").outerHTML;
-    var printContents = intakeTable + intakeTotal + intakeTotalWeight;
 
-    // Open a new window
+function printIntakeTable() {
+    
+    var intakeTable = document.getElementById("intake-table");
+    intakeTable.classList.add("print-hidden");
+
+    
+    var intakeTableHTML = intakeTable.outerHTML;
+    var intakeTotal = document.getElementById("intake-total").outerHTML;
+    var intakeTotalWeight = document.getElementById("intake-total-weight").outerHTML;
+
+    var printContents = intakeTableHTML + intakeTotal + intakeTotalWeight;
+
     var printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Intake Table Print</title>');
     printWindow.document.write('<style>@media print {');
+    printWindow.document.write('.print-hidden th:last-child, .print-hidden td:last-child { display: none; }');
     printWindow.document.write('.table-bordered, .table-bordered th, .table-bordered td { border: 1px solid black !important; }');
     printWindow.document.write('.table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 0.5rem; }');
     printWindow.document.write('.table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; color: #212529; }');
@@ -448,18 +455,29 @@ function printIntakeTable() {
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.print();
+
+    intakeTable.classList.remove("print-hidden");
 }
 
+
+
+
 function printOuttakeTable() {
-    var outtakeTable = document.getElementById("outtake-table").outerHTML;
-    var outtakeTotal = document.getElementById("outtake-total").outerHTML; 
+    
+    var outtakeTable = document.getElementById("outtake-table");
+    outtakeTable.classList.add("print-hidden");
+
+    var outtakeTableHTML = outtakeTable.outerHTML;
+    var outtakeTotal = document.getElementById("outtake-total").outerHTML;
     var outtakeTotalWeight = document.getElementById("outtake-total-weight").outerHTML;
-    var printContents = outtakeTable + outtakeTotal + outtakeTotalWeight;
+
+    var printContents = outtakeTableHTML + outtakeTotal + outtakeTotalWeight;
 
     var printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.open();
     printWindow.document.write('<html><head><title>Outtake Table Print</title>');
     printWindow.document.write('<style>@media print {');
+    printWindow.document.write('.print-hidden th:last-child, .print-hidden td:last-child { display: none; }');
     printWindow.document.write('.table-bordered, .table-bordered th, .table-bordered td { border: 1px solid black !important; }');
     printWindow.document.write('.table-bordered th, .table-bordered td { border: 1px solid black !important; padding: 0.5rem; }');
     printWindow.document.write('.table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; color: #212529; }');
@@ -471,6 +489,8 @@ function printOuttakeTable() {
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.print();
+
+    outtakeTable.classList.remove("print-hidden");
 }
 
 
