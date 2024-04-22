@@ -50,6 +50,7 @@
           <option value="intake">Intake</option>
           <option value="outtake">Outtake</option>
         </select>
+        <button class="btn btn-primary" onclick="downloadCurrentReportAsCSV()" style="float: right;">Download Current Report as CSV</button>
     </div>
       
     <hr>
@@ -579,6 +580,46 @@ function sortTableByDate(tableId, column) {
             });
         }
     });
+}
+
+function downloadCurrentReportAsCSV() {
+    let intakeReport = document.getElementById("intake-report");
+    let outtakeReport = document.getElementById("outtake-report");
+    let reportType = intakeReport.style.display !== 'none' ? 'intake' : 'outtake';
+
+    let tableId = reportType === 'intake' ? 'intake-table' : 'outtake-table';
+    let table = document.getElementById(tableId);
+    let rows = table.querySelectorAll('tr');
+
+    let csv_data = Array.from(rows).filter(row => row.style.display !== 'none').map(row => {
+        let cols = Array.from(row.querySelectorAll('td,th')).slice(0, -1); //dont include delete column
+        return cols.map(col => col.innerText.replace(/,/g, '')).join(",");
+    });
+
+    let totalValueId = reportType + '-total';
+    let totalWeightId = reportType + '-total-weight';
+    let totalValue = document.getElementById(totalValueId).innerText;
+    let totalWeight = document.getElementById(totalWeightId).innerText;
+
+    //total values as an extra row in csv
+    csv_data.push(`Total Value,${totalValue.replace(/[^0-9.]+/g, '')}`);
+    csv_data.push(`Total Weight,${totalWeight.replace(/[^0-9.]+/g, '')}`);
+
+    csv_data = csv_data.join('\n');
+
+    let filename = "swap-shop-" + tableId + '.csv';
+    downloadCSVFile(csv_data, filename);
+}
+
+function downloadCSVFile(csv_data, filename) {
+    let csvFile = new Blob([csv_data], { type: "text/csv" });
+    let temp_link = document.createElement('a');
+    temp_link.download = filename;
+    temp_link.href = window.URL.createObjectURL(csvFile);
+    temp_link.style.display = "none";
+    document.body.appendChild(temp_link);
+    temp_link.click();
+    document.body.removeChild(temp_link);
 }
 
 </script>
