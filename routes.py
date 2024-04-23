@@ -890,12 +890,16 @@ def delete_intake_transaction():
     transaction_id = data.get('transaction_id')
 
     try:
-        
         transaction = IntakeTransaction.query.get(transaction_id)
         if transaction:
-            
+            # Set the related inventory stock back
+            inventory = transaction.inventory
+            inventory.stock -= transaction.quantity
+
+            # Delete the transaction
             db.session.delete(transaction)
             db.session.commit()
+
             return jsonify({'status': 'success'})
         else:
             return jsonify({'status': 'error', 'message': 'Transaction not found'})
@@ -911,14 +915,20 @@ def delete_outtake_transaction():
     try:
         transaction = OuttakeTransaction.query.get(transaction_id)
         if transaction:
+            # Set the related inventory stock back
+            inventory = transaction.inventory
+            inventory.stock += transaction.quantity
+
+            # Delete the transaction
             db.session.delete(transaction)
             db.session.commit()
+
             return jsonify({'status': 'success'})
         else:
             return jsonify({'status': 'error', 'message': 'Transaction not found'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
-    
+
 #delete routes for swapshoprecords
 @app.route('/delete_swapshop_intake_transaction', methods=['POST'])
 def delete_swapshop_intake_transaction():
@@ -928,6 +938,9 @@ def delete_swapshop_intake_transaction():
     try:
         transaction = SwapShopIntakeTransaction.query.get(transaction_id)
         if transaction:
+            # Update inventory stock by subtracting the quantity when deleting the transaction
+            inventory = transaction.swap_shop_inventory
+            inventory.stock -= transaction.quantity
             db.session.delete(transaction)
             db.session.commit()
             return jsonify({'status': 'success'})
@@ -946,6 +959,9 @@ def delete_swapshop_outtake_transaction():
     try:
         transaction = SwapShopOuttakeTransaction.query.get(transaction_id)
         if transaction:
+            # Update inventory stock by adding when deleting outtakw transaction
+            inventory = transaction.swap_shop_inventory
+            inventory.stock += transaction.quantity
             db.session.delete(transaction)
             db.session.commit()
             return jsonify({'status': 'success'})
