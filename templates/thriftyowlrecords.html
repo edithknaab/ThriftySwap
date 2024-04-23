@@ -541,7 +541,8 @@ function printOuttakeTable() {
     window.onload = function() {
         sortTableByDate('myTable', 0);
     };
-function deleteTransaction(transactionId, type) {
+
+    function deleteTransaction(transactionId, type) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -565,6 +566,7 @@ function deleteTransaction(transactionId, type) {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+                    // Reload the page after successful deletion
                     Swal.fire(
                         'Deleted!',
                         'Your transaction has been deleted.',
@@ -591,6 +593,7 @@ function deleteTransaction(transactionId, type) {
         }
     });
 }
+
 
 function downloadCurrentReportAsCSV() {
     let intakeReport = document.getElementById("intake-report");
